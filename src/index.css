@@ -1,1 +1,133 @@
 @import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Resonance design tokens — ported from Docs/DESIGN.md into Tailwind v4 @theme.
+   Colors, spacing, type scale and radii below all generate utilities
+   (bg-*, text-*, p-*, gap-*, rounded-*, etc.).
+--------------------------------------------------------------------------- */
+@theme {
+  /* Fonts */
+  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Colors */
+  --color-surface: #141315;
+  --color-surface-dim: #141315;
+  --color-surface-bright: #3a393b;
+  --color-surface-container-lowest: #0f0e10;
+  --color-surface-container-low: #1c1b1d;
+  --color-surface-container: #201f21;
+  --color-surface-container-high: #2b292c;
+  --color-surface-container-highest: #363436;
+  --color-on-surface: #e6e1e4;
+  --color-on-surface-variant: #e2bebb;
+  --color-inverse-surface: #e6e1e4;
+  --color-inverse-on-surface: #313032;
+  --color-outline: #a98987;
+  --color-outline-variant: #5a403f;
+  --color-surface-tint: #ffb3af;
+  --color-primary: #ffb3af;
+  --color-on-primary: #68000d;
+  --color-primary-container: #ff5959;
+  --color-on-primary-container: #60000b;
+  --color-inverse-primary: #b6232b;
+  --color-secondary: #c6c6c7;
+  --color-on-secondary: #2f3131;
+  --color-secondary-container: #454747;
+  --color-on-secondary-container: #b4b5b5;
+  --color-tertiary: #5adcb2;
+  --color-on-tertiary: #003829;
+  --color-tertiary-container: #00a780;
+  --color-on-tertiary-container: #003325;
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+  --color-primary-fixed: #ffdad7;
+  --color-primary-fixed-dim: #ffb3af;
+  --color-on-primary-fixed: #410005;
+  --color-on-primary-fixed-variant: #930017;
+  --color-secondary-fixed: #e2e2e2;
+  --color-secondary-fixed-dim: #c6c6c7;
+  --color-on-secondary-fixed: #1a1c1c;
+  --color-on-secondary-fixed-variant: #454747;
+  --color-tertiary-fixed: #79f9cd;
+  --color-tertiary-fixed-dim: #5adcb2;
+  --color-on-tertiary-fixed: #002117;
+  --color-on-tertiary-fixed-variant: #00513d;
+  --color-background: #141315;
+  --color-on-background: #e6e1e4;
+  --color-surface-variant: #363436;
+
+  /* Spacing — 8px linear scale + layout tokens */
+  --spacing-unit-xs: 4px;
+  --spacing-unit-sm: 8px;
+  --spacing-unit-md: 16px;
+  --spacing-unit-lg: 32px;
+  --spacing-unit-xl: 64px;
+  --spacing-gutter: 24px;
+  --spacing-margin-desktop: 40px;
+  --spacing-margin-mobile: 16px;
+  --spacing-container-max: 1440px;
+
+  /* Border radius (DESIGN.md scale) */
+  --radius-DEFAULT: 0.5rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Type scale */
+  --text-headline-xl: 48px;
+  --text-headline-xl--line-height: 56px;
+  --text-headline-xl--letter-spacing: -0.02em;
+  --text-headline-xl--font-weight: 800;
+
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
+  --text-headline-lg--letter-spacing: -0.01em;
+  --text-headline-lg--font-weight: 700;
+
+  --text-headline-lg-mobile: 24px;
+  --text-headline-lg-mobile--line-height: 32px;
+  --text-headline-lg-mobile--font-weight: 700;
+
+  --text-headline-md: 20px;
+  --text-headline-md--line-height: 28px;
+  --text-headline-md--font-weight: 600;
+
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 24px;
+  --text-body-lg--font-weight: 400;
+
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--font-weight: 400;
+
+  --text-label-caps: 12px;
+  --text-label-caps--line-height: 16px;
+  --text-label-caps--letter-spacing: 0.05em;
+  --text-label-caps--font-weight: 600;
+}
+
+/* Hide scrollbars on horizontal scroll strips while keeping them scrollable */
+@utility hide-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-background text-on-background font-sans antialiased;
+}
+
+/* Material Symbols base sizing helper */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  user-select: none;
+}
