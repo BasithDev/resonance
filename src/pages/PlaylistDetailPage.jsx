@@ -68,10 +68,15 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
     }
   }
 
-  async function handleRemoveFromPlaylist(song) {
+  async function handleRemoveFromPlaylist(song, targetPlaylistId) {
+    const plId = targetPlaylistId || id
     try {
-      await api.removeSongFromPlaylist(id, song.id)
-      setPlaylist((prev) => prev ? { ...prev, songs: prev.songs.filter((s) => s.id !== song.id) } : null)
+      await api.removeSongFromPlaylist(plId, song.id)
+      if (plId === id) {
+        setPlaylist((prev) => prev ? { ...prev, songs: prev.songs.filter((s) => s.id !== song.id) } : null)
+      } else {
+        loadPlaylist(false)
+      }
     } catch (err) {
       alert(err.message || 'Failed to remove song from playlist')
     }
@@ -211,9 +216,10 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
         playlists={allPlaylists}
         isOpen={contextMenu.isOpen}
         position={contextMenu.pos}
+        currentPlaylistId={id}
         onClose={() => setContextMenu((c) => ({ ...c, isOpen: false }))}
         onAddToPlaylist={handleAddToPlaylist}
-        onDeleteSong={handleRemoveFromPlaylist}
+        onRemoveFromPlaylist={handleRemoveFromPlaylist}
       />
     </div>
   )

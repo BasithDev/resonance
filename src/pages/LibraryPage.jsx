@@ -123,6 +123,15 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
     }
   }
 
+  async function handleRemoveFromPlaylist(song, playlistId) {
+    try {
+      await api.removeSongFromPlaylist(playlistId, song.id)
+      loadData(false)
+    } catch (err) {
+      alert(err.message || 'Failed to remove song from playlist')
+    }
+  }
+
   async function handleDeleteSong(song) {
     try {
       await api.deleteSong(song.id)
@@ -291,6 +300,7 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
         position={contextMenu.pos}
         onClose={() => setContextMenu((c) => ({ ...c, isOpen: false }))}
         onAddToPlaylist={handleAddToPlaylist}
+        onRemoveFromPlaylist={handleRemoveFromPlaylist}
         onDeleteSong={handleDeleteSong}
       />
 
