@@ -43,16 +43,18 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(255,89,89,0.25)] transition-transform duration-300 hover:scale-105">
             <Icon name="graphic_eq" filled />
           </span>
-          {!collapsed && (
-            <div className="overflow-hidden">
-              <h1 className="truncate text-headline-md font-extrabold text-primary">
-                Resonance
-              </h1>
-              <p className="truncate text-body-sm text-on-surface-variant">
-                Premium Audio
-              </p>
-            </div>
-          )}
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              collapsed ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-xs opacity-100'
+            }`}
+          >
+            <h1 className="whitespace-nowrap text-headline-md font-extrabold text-primary">
+              Resonance
+            </h1>
+            <p className="whitespace-nowrap text-body-sm text-on-surface-variant">
+              Premium Audio
+            </p>
+          </div>
         </div>
       </div>
 
@@ -74,10 +76,14 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
                     : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
                 }`}
               >
-                <Icon name={item.icon} filled={isActive} />
-                {!collapsed && (
-                  <span className="truncate text-body-lg">{item.label}</span>
-                )}
+                <Icon name={item.icon} filled={isActive} className="shrink-0" />
+                <span
+                  className={`overflow-hidden whitespace-nowrap text-body-lg transition-all duration-300 ease-in-out ${
+                    collapsed ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-xs opacity-100'
+                  }`}
+                >
+                  {item.label}
+                </span>
               </button>
             </li>
           )
@@ -90,12 +96,18 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
           type="button"
           onClick={onCreate}
           title={collapsed ? 'Create Playlist' : undefined}
-          className={`flex w-full items-center justify-center rounded-lg bg-primary-container font-semibold text-on-primary-container shadow-[0_0_15px_rgba(255,89,89,0.2)] transition-all hover:brightness-110 ${
+          className={`flex w-full items-center justify-center rounded-lg bg-primary-container font-semibold text-on-primary-container shadow-[0_0_15px_rgba(255,89,89,0.2)] transition-all duration-300 hover:brightness-110 cursor-pointer ${
             collapsed ? 'h-11 px-0' : 'gap-2 py-3'
           }`}
         >
-          <Icon name="add" />
-          {!collapsed && <span className="text-body-lg">Create Playlist</span>}
+          <Icon name="add" className="shrink-0" />
+          <span
+            className={`overflow-hidden whitespace-nowrap text-body-lg transition-all duration-300 ease-in-out ${
+              collapsed ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-xs opacity-100'
+            }`}
+          >
+            Create Playlist
+          </span>
         </button>
       </div>
     </nav>
