@@ -74,7 +74,7 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
                     : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
                 }`}
               >
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center">
+                <div className="flex h-7 w-9 shrink-0 items-center justify-center">
                   <Icon name={item.icon} filled={isActive} className="text-[22px]" />
                 </div>
                 <span

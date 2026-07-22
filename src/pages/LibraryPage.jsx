@@ -25,27 +25,27 @@ function LibraryPlaylistCard({ name, songs = [], coverUrl, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="group flex cursor-pointer flex-col gap-3 rounded-2xl border border-surface-variant bg-surface-container-low p-4 transition-all duration-300 hover:-translate-y-1 hover:bg-surface-container hover:shadow-xl"
+      className="group flex cursor-pointer flex-col gap-2.5 rounded-xl border border-surface-variant bg-surface-container-low p-3 transition-all duration-300 hover:-translate-y-1 hover:bg-surface-container hover:shadow-lg"
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-surface-variant shadow-md">
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-surface-variant shadow-sm">
         {img ? (
           <img src={img} alt={name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-surface-container-high text-on-surface-variant/30">
-            <Icon name="queue_music" className="text-[54px]" />
+            <Icon name="queue_music" className="text-[40px]" />
           </div>
         )}
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg">
-            <Icon name="play_arrow" filled className="text-[28px] ml-0.5" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-on-primary shadow-md transition-transform duration-200 hover:scale-110">
+            <Icon name="play_arrow" filled className="text-[22px] ml-0.5" />
           </div>
         </div>
       </div>
-      <div>
-        <h3 className="truncate text-headline-md font-bold text-on-surface group-hover:text-primary transition-colors">
+      <div className="min-w-0">
+        <h3 className="truncate font-bold text-on-surface text-body-lg group-hover:text-primary transition-colors">
           {name}
         </h3>
-        <p className="text-body-sm text-on-surface-variant mt-0.5">
+        <p className="truncate text-body-sm text-on-surface-variant/80 mt-0.5">
           {count} {count === 1 ? 'Track' : 'Tracks'}{durText}
         </p>
       </div>
@@ -196,7 +196,7 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
             See All Playlists
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-unit-md md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {/* Master All Songs Card */}
           <LibraryPlaylistCard
             name="All Songs"
