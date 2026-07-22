@@ -11,7 +11,7 @@ function fmtDur(sec) {
   return `${m}:${s}`
 }
 
-export default function PasteLinkModal({ isOpen, onClose, onImportSuccess }) {
+export default function PasteLinkModal({ isOpen, onClose, onImportSuccess, onPlay, currentTrackId, isPlaying }) {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -68,15 +68,14 @@ export default function PasteLinkModal({ isOpen, onClose, onImportSuccess }) {
     try {
       if (preview.type === 'playlist') {
         await api.batchImportSongs(preview.songs)
-        setSuccessMsg(`Successfully imported ${preview.songs.length} songs to library!`)
       } else {
         await api.batchImportSongs([preview.song])
-        setSuccessMsg(`Successfully imported "${preview.song.title}" to library!`)
       }
+      setSuccessMsg('Successfully added!')
       setTimeout(() => {
         onImportSuccess?.()
         onClose?.()
-      }, 1200)
+      }, 1000)
     } catch (err) {
       setError(err.message || 'Import failed. Please try again.')
     } finally {
@@ -107,7 +106,7 @@ export default function PasteLinkModal({ isOpen, onClose, onImportSuccess }) {
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-variant hover:text-on-surface"
+              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-variant hover:text-on-surface cursor-pointer"
             >
               <Icon name="close" />
             </button>
@@ -119,7 +118,7 @@ export default function PasteLinkModal({ isOpen, onClose, onImportSuccess }) {
               </div>
               <div>
                 <h2 className="text-headline-md font-extrabold text-on-surface">Import YouTube Media</h2>
-                <p className="text-body-sm text-on-surface-variant">Paste a video or playlist link to add songs</p>
+                <p className="text-body-sm text-on-surface-variant">Paste a video or playlist link to preview & add songs</p>
               </div>
             </div>
 
@@ -159,8 +158,9 @@ export default function PasteLinkModal({ isOpen, onClose, onImportSuccess }) {
 
             {/* Success Message */}
             {successMsg && (
-              <div className="mt-4 rounded-xl border border-primary/30 bg-primary/10 p-4 text-body-sm font-semibold text-primary">
-                {successMsg}
+              <div className="mt-4 flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 p-4 text-body-lg font-bold text-primary">
+                <Icon name="check_circle" filled />
+                <span>{successMsg}</span>
               </div>
             )}
 
@@ -168,33 +168,87 @@ export default function PasteLinkModal({ isOpen, onClose, onImportSuccess }) {
             {preview && !successMsg && (
               <div className="mt-6 flex flex-col gap-4 border-t border-surface-variant pt-6">
                 <h3 className="text-label-caps uppercase tracking-wider text-on-surface-variant font-bold">
-                  Preview ({preview.type === 'playlist' ? `${preview.songs.length} Tracks` : 'Single Song'})
+                  Preview ({preview.type === 'playlist' ? `${preview.songs.length} Tracks` : 'Single Track'})
                 </h3>
 
                 {preview.type === 'video' && preview.song && (
-                  <div className="flex items-center gap-4 rounded-xl border border-surface-variant bg-surface-container-low p-3">
-                    <CoverArt src={preview.song.thumbnailUrl} alt="" className="h-14 w-14 rounded-lg object-cover" />
-                    <div className="min-w-0 flex-1">
-                      <h4 className="truncate font-semibold text-on-surface">{preview.song.title}</h4>
-                      <p className="truncate text-body-sm text-on-surface-variant">{preview.song.channel}</p>
+                  <div className="flex flex-col gap-3 rounded-2xl border border-surface-variant/80 bg-surface-container-low p-4 shadow-sm">
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-surface-variant shadow-md">
+                        <CoverArt src={preview.song.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => onPlay?.(preview.song)}
+                          className="absolute inset-0 flex items-center justify-center bg-black/40 text-white transition-opacity hover:bg-black/60 cursor-pointer"
+                        >
+                          <Icon
+                            name={currentTrackId === preview.song.youtubeId && isPlaying ? 'pause' : 'play_arrow'}
+                            filled
+                            className="text-[32px]"
+                          />
+                        </button>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="truncate font-bold text-on-surface text-body-lg">{preview.song.title}</h4>
+                        <div className="mt-1 flex items-center gap-3 text-body-sm text-on-surface-variant">
+                          <span className="truncate">{preview.song.channel || 'Unknown Uploader'}</span>
+                          {preview.song.durationSec && (
+                            <span className="font-semibold shrink-0">· {fmtDur(preview.song.durationSec)}</span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => onPlay?.(preview.song)}
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-all cursor-pointer"
+                      >
+                        <Icon
+                          name={currentTrackId === preview.song.youtubeId && isPlaying ? 'pause' : 'play_arrow'}
+                          filled
+                          className="text-[26px]"
+                        />
+                      </button>
                     </div>
-                    <span className="text-body-sm text-on-surface-variant font-medium">
-                      {fmtDur(preview.song.durationSec)}
-                    </span>
                   </div>
                 )}
 
                 {preview.type === 'playlist' && (
-                  <div className="max-h-60 overflow-y-auto space-y-2 no-scrollbar pr-1">
-                    {preview.songs.map((song, idx) => (
-                      <div key={idx} className="flex items-center gap-3 rounded-lg border border-surface-variant/50 bg-surface-container-low p-2">
-                        <CoverArt src={song.thumbnailUrl} alt="" className="h-10 w-10 rounded-md object-cover" />
-                        <div className="min-w-0 flex-1">
-                          <h4 className="truncate text-body-sm font-medium text-on-surface">{song.title}</h4>
-                          <p className="truncate text-label-caps text-on-surface-variant/80">{song.channel}</p>
+                  <div className="max-h-64 overflow-y-auto space-y-2 no-scrollbar pr-1">
+                    {preview.songs.map((song, idx) => {
+                      const isCurrent = currentTrackId === song.youtubeId
+                      return (
+                        <div key={idx} className="flex items-center gap-3 rounded-xl border border-surface-variant/50 bg-surface-container-low p-2.5 transition-colors hover:bg-surface-container">
+                          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-surface-variant">
+                            <CoverArt src={song.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => onPlay?.(song)}
+                              className="absolute inset-0 flex items-center justify-center bg-black/40 text-white transition-opacity hover:bg-black/60 cursor-pointer"
+                            >
+                              <Icon
+                                name={isCurrent && isPlaying ? 'pause' : 'play_arrow'}
+                                filled
+                                className="text-[22px]"
+                              />
+                            </button>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="truncate text-body-sm font-semibold text-on-surface">{song.title}</h4>
+                            <p className="truncate text-label-caps text-on-surface-variant/80">{song.channel}</p>
+                          </div>
+                          <span className="text-body-sm text-on-surface-variant font-medium shrink-0 px-1">
+                            {fmtDur(song.durationSec)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => onPlay?.(song)}
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-all cursor-pointer"
+                          >
+                            <Icon name={isCurrent && isPlaying ? 'pause' : 'play_arrow'} filled className="text-[18px]" />
+                          </button>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
 

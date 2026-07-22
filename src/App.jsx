@@ -479,6 +479,9 @@ function App() {
       <PasteLinkModal
         isOpen={isPasteModalOpen}
         onClose={() => setIsPasteModalOpen(false)}
+        onPlay={playTrack}
+        currentTrackId={playerTrack?.id || playerTrack?.youtubeId}
+        isPlaying={isPlaying}
         onImportSuccess={() => {}}
       />
     </div>
