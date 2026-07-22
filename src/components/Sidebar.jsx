@@ -30,7 +30,7 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
           collapsed ? 'flex-col gap-3 justify-center' : 'justify-between px-2'
         }`}
       >
-        <div className="flex items-center gap-3 overflow-hidden cursor-pointer" onClick={onToggle}>
+        <div className="flex items-center gap-3 overflow-hidden cursor-pointer" onClick={() => onSelect?.('library')}>
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(255,89,89,0.25)]">
             <Icon name="graphic_eq" filled />
           </span>
