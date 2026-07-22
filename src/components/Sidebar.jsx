@@ -35,12 +35,12 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
       </button>
 
       {/* Brand header */}
-      <div className="mb-unit-lg flex items-center justify-between px-1">
+      <div className="mb-unit-lg flex h-12 items-center px-1">
         <div
-          className={`flex items-center gap-3 overflow-hidden cursor-pointer ${collapsed ? 'w-full justify-center' : ''}`}
+          className="flex items-center gap-3 overflow-hidden cursor-pointer"
           onClick={() => onSelect?.('library')}
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(255,89,89,0.25)] transition-transform duration-300 hover:scale-105">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(255,89,89,0.25)] transition-transform duration-300 hover:scale-105 ml-1">
             <Icon name="graphic_eq" filled />
           </span>
           <div
@@ -68,15 +68,15 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
                 type="button"
                 onClick={() => onSelect?.(item.id)}
                 title={collapsed ? item.label : undefined}
-                className={`group flex w-full items-center rounded-lg py-3 transition-colors ${
-                  collapsed ? 'justify-center px-0' : 'gap-unit-md px-4'
-                } ${
+                className={`group flex h-12 w-full items-center gap-4 rounded-xl px-3 transition-colors cursor-pointer ${
                   isActive
                     ? 'bg-surface-container-highest font-semibold text-primary shadow-[0_0_20px_rgba(255,89,89,0.15)]'
                     : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
                 }`}
               >
-                <Icon name={item.icon} filled={isActive} className="shrink-0" />
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center">
+                  <Icon name={item.icon} filled={isActive} className="text-[22px]" />
+                </div>
                 <span
                   className={`overflow-hidden whitespace-nowrap text-body-lg transition-all duration-300 ease-in-out ${
                     collapsed ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-xs opacity-100'
@@ -91,16 +91,16 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
       </ul>
 
       {/* Create Playlist */}
-      <div className={collapsed ? 'px-0' : 'px-2'}>
+      <div className="px-1">
         <button
           type="button"
           onClick={onCreate}
           title={collapsed ? 'Create Playlist' : undefined}
-          className={`flex w-full items-center justify-center rounded-lg bg-primary-container font-semibold text-on-primary-container shadow-[0_0_15px_rgba(255,89,89,0.2)] transition-all duration-300 hover:brightness-110 cursor-pointer ${
-            collapsed ? 'h-11 px-0' : 'gap-2 py-3'
-          }`}
+          className="flex h-12 w-full items-center gap-4 rounded-xl bg-primary-container px-3 font-semibold text-on-primary-container shadow-[0_0_15px_rgba(255,89,89,0.2)] transition-all duration-300 hover:brightness-110 cursor-pointer"
         >
-          <Icon name="add" className="shrink-0" />
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center">
+            <Icon name="add" className="text-[24px]" />
+          </div>
           <span
             className={`overflow-hidden whitespace-nowrap text-body-lg transition-all duration-300 ease-in-out ${
               collapsed ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-xs opacity-100'
