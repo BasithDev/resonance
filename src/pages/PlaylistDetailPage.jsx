@@ -25,6 +25,7 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
 
   const [playlist, setPlaylist] = useState(null)
   const [allPlaylists, setAllPlaylists] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [contextMenu, setContextMenu] = useState({ isOpen: false, song: null, pos: { x: 0, y: 0 } })
@@ -47,6 +48,7 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
   }
 
   useEffect(() => {
+    setSearchQuery('')
     loadPlaylist(true)
   }, [id])
 
@@ -95,7 +97,7 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+        <div className="h-8 w-8 animate-spin rounded-full border-3 border-primary/30 border-t-primary" />
       </div>
     )
   }
@@ -103,43 +105,55 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
   if (error || !playlist) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4 text-on-surface-variant">
-        <Icon name="error_outline" className="text-[48px] opacity-40" />
-        <p className="text-headline-md opacity-50">{error || 'Playlist not found'}</p>
-        <button onClick={() => navigate('/playlists')} className="text-primary hover:underline text-body-sm">
-          ← Back to Playlists
+        <Icon name="error_outline" className="text-[48px] text-error" />
+        <p className="text-body-lg text-error font-semibold">{error || 'Playlist not found'}</p>
+        <button
+          type="button"
+          onClick={() => navigate('/playlists')}
+          className="text-body-sm font-semibold text-primary hover:underline cursor-pointer"
+        >
+          Back to Playlists
         </button>
       </div>
     )
   }
 
-  const { songs = [] } = playlist
+  const songs = playlist.songs || []
+  const filteredSongs = songs.filter((s) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase().trim()
+    const title = (s.title || '').toLowerCase()
+    const artist = (s.channel || s.artist || '').toLowerCase()
+    return title.includes(q) || artist.includes(q)
+  })
+
   const currentTrackId = playerTrack?.id || playerTrack?.youtubeId
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-unit-xl">
       {/* Back button */}
       <button
+        type="button"
         onClick={() => navigate('/playlists')}
-        className="flex items-center gap-2 self-start rounded-full
-                   bg-surface-container-high px-4 py-2 text-body-sm text-on-surface-variant
-                   transition-colors hover:bg-surface-container-highest hover:text-on-surface"
+        className="flex w-fit items-center gap-2 text-body-sm font-semibold text-on-surface-variant transition-colors hover:text-on-surface cursor-pointer"
       >
-        <Icon name="chevron_left" />
-        Back to Playlists
+        <Icon name="arrow_back" />
+        <span>Back to Playlists</span>
       </button>
 
-      {/* Playlist Hero */}
-      <section className="flex flex-col items-end gap-unit-lg md:flex-row md:items-center">
-        <div className="group relative h-56 w-full shrink-0 overflow-hidden
-                        rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] md:w-56">
-          {playlist.coverUrl
+      {/* Hero Details Header */}
+      <section className="flex flex-col gap-6 md:flex-row md:items-end">
+        {/* Cover */}
+        <div className="group relative aspect-square w-full max-w-[200px] overflow-hidden
+                        rounded-[20px] border border-surface-variant bg-surface-variant shadow-xl shrink-0">
+          {playlist.coverUrl || songs[0]?.thumbnailUrl
             ? <img
-                src={playlist.coverUrl}
+                src={playlist.coverUrl || songs[0]?.thumbnailUrl}
                 alt={playlist.name}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="h-full w-full object-cover"
               />
             : <div className="flex h-full w-full items-center justify-center bg-surface-container-high">
-                <Icon name="queue_music" className="text-[80px] text-on-surface-variant/20" />
+                <Icon name="queue_music" className="text-[80px]" />
               </div>
           }
           <div className="absolute inset-0 flex items-center justify-center
@@ -149,9 +163,9 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
               disabled={songs.length === 0}
               onClick={() => songs.length && onPlay?.(songs[0], songs)}
               className="flex h-16 w-16 items-center justify-center rounded-full
-                         bg-primary-container text-on-primary-container
+                         bg-primary text-on-primary
                          shadow-[0_0_20px_rgba(255,89,89,0.3)]
-                         transition-transform hover:scale-110 disabled:opacity-50"
+                         transition-transform hover:scale-110 disabled:opacity-50 cursor-pointer"
             >
               <Icon name="play_arrow" filled className="text-[30px]" />
             </button>
@@ -180,34 +194,78 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
               className="flex items-center gap-2 rounded-full bg-primary-container
                          px-8 py-3 font-semibold text-headline-md text-on-primary-container
                          shadow-[0_0_20px_rgba(255,89,89,0.2)]
-                         transition-all hover:brightness-110 hover:scale-105 disabled:opacity-50"
+                         transition-all hover:brightness-110 hover:scale-105 disabled:opacity-50 cursor-pointer"
             >
               <Icon name="play_arrow" filled />
               Play All
             </button>
-            <button
-              type="button"
-              onClick={handleDeletePlaylist}
-              title="Delete Playlist"
-              className="flex h-11 w-11 items-center justify-center rounded-full
-                         border border-error-container/40 text-error
-                         transition-colors hover:bg-error-container/20"
-            >
-              <Icon name="delete" />
-            </button>
+            {id !== 'all-songs' && (
+              <button
+                type="button"
+                onClick={handleDeletePlaylist}
+                title="Delete Playlist"
+                className="flex h-11 w-11 items-center justify-center rounded-full
+                           border border-error-container/40 text-error
+                           transition-colors hover:bg-error-container/20 cursor-pointer"
+              >
+                <Icon name="delete" />
+              </button>
+            )}
           </div>
         </div>
       </section>
 
+      {/* In-Playlist Search & Filter Header */}
+      <section className="mt-2 flex flex-col gap-4 border-t border-surface-variant/40 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-headline-md font-bold text-on-surface">Tracks in Playlist</h3>
+          <p className="text-body-sm text-on-surface-variant mt-0.5">
+            {searchQuery
+              ? `Showing ${filteredSongs.length} of ${songs.length} tracks`
+              : `${songs.length} total tracks`}
+          </p>
+        </div>
+
+        <div className="relative w-full sm:w-80">
+          <Icon
+            name="search"
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]"
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search in this playlist…"
+            className="w-full rounded-full border border-surface-variant/60 bg-surface-container-low py-2.5 pl-11 pr-9 text-body-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary focus:outline-none"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface cursor-pointer"
+            >
+              <Icon name="close" className="text-[18px]" />
+            </button>
+          )}
+        </div>
+      </section>
+
       {/* Song Table */}
-      <section className="mt-4">
-        <SongTable
-          songs={songs}
-          currentTrackId={currentTrackId}
-          isPlaying={isPlaying}
-          onPlay={onPlay}
-          onOpenContextMenu={handleOpenMenu}
-        />
+      <section>
+        {filteredSongs.length === 0 && searchQuery ? (
+          <div className="flex h-48 flex-col items-center justify-center gap-2 rounded-2xl border border-surface-variant/60 bg-surface-container-low text-on-surface-variant">
+            <Icon name="search_off" className="text-[42px] opacity-40" />
+            <p className="text-body-lg">No tracks found matching "{searchQuery}"</p>
+          </div>
+        ) : (
+          <SongTable
+            songs={filteredSongs}
+            currentTrackId={currentTrackId}
+            isPlaying={isPlaying}
+            onPlay={onPlay}
+            onOpenContextMenu={handleOpenMenu}
+          />
+        )}
       </section>
 
       {/* Context Menu */}
