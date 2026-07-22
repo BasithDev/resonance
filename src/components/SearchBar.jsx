@@ -8,26 +8,26 @@ import Icon from './Icon.jsx'
  *   onSubmit   - (url: string) => void
  *   placeholder - string
  */
-function SearchBar({ onSubmit, placeholder = 'Paste a YouTube link…' }) {
+function SearchBar({ onSubmit, placeholder = 'Search music, artists, or paste YouTube link…' }) {
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault()
-        const url = e.currentTarget.elements.namedItem('resonance-paste')?.value ?? ''
-        onSubmit?.(url)
+        const query = e.currentTarget.elements.namedItem('resonance-search')?.value ?? ''
+        onSubmit?.(query)
       }}
       className="group relative w-full"
     >
       <Icon
-        name="link"
+        name="search"
         className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors group-focus-within:text-primary"
       />
       <input
-        name="resonance-paste"
+        name="resonance-search"
         type="text"
         placeholder={placeholder}
         autoComplete="off"
-        className="w-full rounded-full border border-transparent bg-surface-container-high py-3 pl-12 pr-4 text-body-lg text-on-surface transition-all placeholder:text-on-surface-variant focus:border-primary focus:outline-none focus:ring-0"
+        className="w-full rounded-full border border-surface-variant/40 bg-surface-container-high py-2.5 pl-12 pr-4 text-body-lg text-on-surface transition-all placeholder:text-on-surface-variant/60 focus:border-primary focus:bg-surface-container focus:outline-none"
       />
     </form>
   )

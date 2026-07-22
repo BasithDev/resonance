@@ -47,3 +47,5 @@ export const deletePlaylist         = (id)           => del(`/playlists/${id}`)
 export const addSongToPlaylist     = (playlistId, songId) => post(`/playlists/${playlistId}/songs`, { songId })
 export const removeSongFromPlaylist = (playlistId, songId) => del(`/playlists/${playlistId}/songs/${songId}`)
 
+// ---------- Search ----------
+export const searchYouTube = (q) => get(`/search?q=${encodeURIComponent(q)}`)

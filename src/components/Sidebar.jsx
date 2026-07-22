@@ -2,7 +2,7 @@ import Icon from './Icon.jsx'
 
 const NAV_ITEMS = [
   { id: 'library', label: 'Library', icon: 'library_music' },
-  { id: 'paste-link', label: 'Paste Link', icon: 'link' },
+  { id: 'paste-link', label: 'Import Link', icon: 'link' },
   { id: 'playlists', label: 'Playlists', icon: 'playlist_play' },
   { id: 'export-import', label: 'Export/Import', icon: 'swap_vert' },
   { id: 'settings', label: 'Settings', icon: 'settings' },

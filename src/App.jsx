@@ -5,8 +5,10 @@ import SearchBar from './components/SearchBar.jsx'
 import MiniPlayer from './components/MiniPlayer.jsx'
 import FullPlayer from './components/FullPlayer.jsx'
 import CreatePlaylistModal from './components/CreatePlaylistModal.jsx'
+import PasteLinkModal from './components/PasteLinkModal.jsx'
+import Icon from './components/Icon.jsx'
 import LibraryPage from './pages/LibraryPage.jsx'
-import PasteLinkPage from './pages/PasteLinkPage.jsx'
+import SearchPage from './pages/SearchPage.jsx'
 import PlaylistsPage from './pages/PlaylistsPage.jsx'
 import PlaylistDetailPage from './pages/PlaylistDetailPage.jsx'
 import * as api from './api/index.js'
@@ -16,7 +18,7 @@ const SIDEBAR_COLLAPSED = 76
 
 const PATH_TO_NAV = {
   '/': 'library',
-  '/paste-link': 'paste-link',
+  '/search': 'library',
   '/playlists': 'playlists',
   '/export-import': 'export-import',
   '/settings': 'settings',
@@ -34,6 +36,7 @@ function App() {
     () => localStorage.getItem('resonance:sidebar') === 'collapsed',
   )
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isPasteModalOpen, setIsPasteModalOpen] = useState(false)
 
   useEffect(() => {
     localStorage.setItem('resonance:sidebar', collapsed ? 'collapsed' : 'expanded')
@@ -337,13 +340,22 @@ function App() {
 
   // ── Navigation ───────────────────────────────────────────────────────────
   function handleNavSelect(id) {
+    if (id === 'paste-link') {
+      setIsPasteModalOpen(true)
+      return
+    }
     const path = NAV_TO_PATH[id]
     if (path) navigate(path)
   }
 
-  function handleSearchSubmit(url) {
-    if (!url?.trim()) return
-    navigate(`/paste-link?url=${encodeURIComponent(url.trim())}`)
+  function handleSearchSubmit(query) {
+    if (!query?.trim()) return
+    const str = query.trim()
+    if (str.startsWith('http://') || str.startsWith('https://') || str.includes('youtube.com') || str.includes('youtu.be')) {
+      setIsPasteModalOpen(true)
+    } else {
+      navigate(`/search?q=${encodeURIComponent(str)}`)
+    }
   }
 
   return (
@@ -362,11 +374,20 @@ function App() {
         style={{ marginLeft: sidebarWidth }}
       >
         {/* Sticky header */}
-        <header className="sticky top-0 z-30 flex items-center border-b border-surface-variant
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-surface-variant
                            bg-surface/90 px-margin-mobile py-unit-md backdrop-blur-md md:px-margin-desktop">
           <div className="max-w-2xl flex-1">
             <SearchBar onSubmit={handleSearchSubmit} />
           </div>
+
+          <button
+            type="button"
+            onClick={() => setIsPasteModalOpen(true)}
+            className="flex items-center gap-2 rounded-full bg-surface-container-high px-4 py-2.5 text-body-sm font-semibold text-on-surface border border-surface-variant/40 hover:bg-surface-container hover:text-primary transition-all cursor-pointer shadow-sm"
+          >
+            <Icon name="link" className="text-[20px]" />
+            <span className="hidden sm:inline">Import Link</span>
+          </button>
         </header>
 
         {/* Page content */}
@@ -380,7 +401,14 @@ function App() {
                 isAudioLoading={isAudioLoading}
               />
             } />
-            <Route path="/paste-link"  element={<PasteLinkPage onPlay={playTrack} />} />
+            <Route path="/search" element={
+              <SearchPage
+                onPlay={playTrack}
+                currentTrackId={playerTrack?.id || playerTrack?.youtubeId}
+                isPlaying={isPlaying}
+                isAudioLoading={isAudioLoading}
+              />
+            } />
             <Route path="/playlists"   element={<PlaylistsPage onPlay={playTrack} />} />
             <Route path="/playlists/:id" element={
               <PlaylistDetailPage
@@ -441,11 +469,17 @@ function App() {
         onToggleShuffle={toggleShuffle}
       />
 
-      {/* Create Playlist Modal */}
+      {/* Modals */}
       <CreatePlaylistModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreatePlaylist}
+      />
+
+      <PasteLinkModal
+        isOpen={isPasteModalOpen}
+        onClose={() => setIsPasteModalOpen(false)}
+        onImportSuccess={() => {}}
       />
     </div>
   )
