@@ -20,18 +20,27 @@ const NAV_ITEMS = [
 function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }) {
   return (
     <nav
-      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-surface-variant bg-surface-container-low py-unit-lg transition-[width] duration-300 ease-in-out ${
+      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-surface-variant bg-surface-container-low py-unit-lg transition-all duration-300 ease-in-out ${
         collapsed ? 'w-19 px-unit-sm' : 'w-70 px-unit-md'
       }`}
     >
-      {/* Brand + collapse toggle */}
-      <div
-        className={`mb-unit-lg flex items-center ${
-          collapsed ? 'flex-col gap-3 justify-center' : 'justify-between px-2'
-        }`}
+      {/* Border-centered collapse/expand toggle button */}
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        className="absolute -right-3.5 top-7 flex h-7 w-7 items-center justify-center rounded-full border border-surface-variant bg-surface-container-high text-on-surface-variant shadow-md transition-all duration-300 hover:scale-110 hover:bg-primary-container hover:text-on-primary-container cursor-pointer z-50"
       >
-        <div className="flex items-center gap-3 overflow-hidden cursor-pointer" onClick={() => onSelect?.('library')}>
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(255,89,89,0.25)]">
+        <Icon name={collapsed ? 'chevron_right' : 'chevron_left'} className="text-[18px]" />
+      </button>
+
+      {/* Brand header */}
+      <div className="mb-unit-lg flex items-center justify-between px-1">
+        <div
+          className={`flex items-center gap-3 overflow-hidden cursor-pointer ${collapsed ? 'w-full justify-center' : ''}`}
+          onClick={() => onSelect?.('library')}
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(255,89,89,0.25)] transition-transform duration-300 hover:scale-105">
             <Icon name="graphic_eq" filled />
           </span>
           {!collapsed && (
@@ -45,14 +54,6 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
             </div>
           )}
         </div>
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface cursor-pointer"
-        >
-          <Icon name={collapsed ? 'chevron_right' : 'chevron_left'} />
-        </button>
       </div>
 
       {/* Nav links */}
