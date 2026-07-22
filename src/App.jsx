@@ -11,6 +11,7 @@ import LibraryPage from './pages/LibraryPage.jsx'
 import SearchPage from './pages/SearchPage.jsx'
 import PlaylistsPage from './pages/PlaylistsPage.jsx'
 import PlaylistDetailPage from './pages/PlaylistDetailPage.jsx'
+import ExportImportPage from './pages/ExportImportPage.jsx'
 import * as api from './api/index.js'
 
 const SIDEBAR_EXPANDED = 280
@@ -421,7 +422,7 @@ function App() {
                 onPlay={playTrack}
               />
             } />
-            <Route path="/export-import" element={<ComingSoon title="Export / Import" />} />
+            <Route path="/export-import" element={<ExportImportPage />} />
             <Route path="/settings"    element={<ComingSoon title="Settings" />} />
           </Routes>
         </div>
