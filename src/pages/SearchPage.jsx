@@ -22,7 +22,12 @@ export default function SearchPage({ onPlay, currentTrackId, isPlaying, isAudioL
   const [importedMap, setImportedMap] = useState({})
   const [importingId, setImportingId] = useState(null)
   const [playlists, setPlaylists] = useState([])
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('resonance:search_view') || 'grid')
   const [contextMenu, setContextMenu] = useState({ isOpen: false, song: null, pos: { x: 0, y: 0 } })
+
+  useEffect(() => {
+    localStorage.setItem('resonance:search_view', viewMode)
+  }, [viewMode])
 
   useEffect(() => {
     async function initData() {
@@ -93,15 +98,45 @@ export default function SearchPage({ onPlay, currentTrackId, isPlaying, isAudioL
 
   return (
     <div className="flex flex-col gap-unit-xl">
-      {/* Search Header */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <Icon name="search" className="text-[32px] text-primary" />
-          <h1 className="text-headline-xl font-extrabold text-on-surface">Search Results</h1>
+      {/* Search Header with View Toggle */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-3">
+            <Icon name="search" className="text-[32px] text-primary" />
+            <h1 className="text-headline-xl font-extrabold text-on-surface">Search Results</h1>
+          </div>
+          <p className="text-body-lg text-on-surface-variant">
+            {query ? `Showing YouTube results for "${query}"` : 'Enter a query in the top search bar'}
+          </p>
         </div>
-        <p className="text-body-lg text-on-surface-variant">
-          {query ? `Showing YouTube results for "${query}"` : 'Enter a query in the top search bar'}
-        </p>
+
+        {/* View Switcher Toggle */}
+        <div className="flex items-center gap-1 rounded-xl border border-surface-variant bg-surface-container-low p-1 shadow-sm shrink-0">
+          <button
+            type="button"
+            onClick={() => setViewMode('grid')}
+            title="Grid View"
+            className={`flex h-9 w-9 items-center justify-center rounded-lg transition-all cursor-pointer ${
+              viewMode === 'grid'
+                ? 'bg-primary-container text-on-primary-container shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            <Icon name="grid_view" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('list')}
+            title="Horizontal List View"
+            className={`flex h-9 w-9 items-center justify-center rounded-lg transition-all cursor-pointer ${
+              viewMode === 'list'
+                ? 'bg-primary-container text-on-primary-container shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            <Icon name="view_list" />
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -120,7 +155,8 @@ export default function SearchPage({ onPlay, currentTrackId, isPlaying, isAudioL
           <Icon name="search_off" className="text-[54px] opacity-40" />
           <p className="text-body-lg">No tracks found for "{query}"</p>
         </div>
-      ) : (
+      ) : viewMode === 'grid' ? (
+        /* ── Grid View ── */
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {results.map((track) => {
             const isCurrent = currentTrackId === track.youtubeId
@@ -171,6 +207,92 @@ export default function SearchPage({ onPlay, currentTrackId, isPlaying, isAudioL
                     onClick={() => handleImportSong(track)}
                     disabled={isImported || importingId === track.youtubeId}
                     className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 px-3 text-body-sm font-bold transition-all cursor-pointer ${
+                      isImported
+                        ? 'bg-surface-variant/60 text-primary border border-primary/20'
+                        : 'bg-primary-container text-on-primary-container hover:brightness-110 shadow-md'
+                    }`}
+                  >
+                    {importingId === track.youtubeId ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-on-primary-container/30 border-t-on-primary-container" />
+                    ) : isImported ? (
+                      <>
+                        <Icon name="check_circle" filled className="text-[18px]" />
+                        <span>In Library</span>
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="add" className="text-[18px]" />
+                        <span>Import</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => handleOpenMenu(track, e)}
+                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-surface-variant bg-surface-container text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface cursor-pointer"
+                  >
+                    <Icon name="more_vert" />
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        /* ── Horizontal List View ── */
+        <div className="flex flex-col gap-2">
+          {results.map((track, index) => {
+            const isCurrent = currentTrackId === track.youtubeId
+            const isImported = importedMap[track.youtubeId]
+
+            return (
+              <div
+                key={track.youtubeId}
+                className="group flex items-center gap-4 rounded-xl border border-surface-variant/60 bg-surface-container-low p-3 transition-all duration-200 hover:bg-surface-container hover:shadow-md"
+              >
+                {/* Index / Play Button */}
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => onPlay?.(track)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform hover:scale-110 cursor-pointer"
+                  >
+                    {isCurrent && isPlaying ? (
+                      <Icon name="pause" filled className="text-[22px]" />
+                    ) : (
+                      <Icon name="play_arrow" filled className="text-[22px] ml-0.5" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Thumbnail */}
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-surface-variant shadow-sm">
+                  <CoverArt src={track.thumbnailUrl} alt={track.title} className="h-full w-full object-cover" />
+                </div>
+
+                {/* Title & Artist */}
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate font-bold text-on-surface group-hover:text-primary transition-colors">
+                    {track.title}
+                  </h3>
+                  <p className="truncate text-body-sm text-on-surface-variant/80">
+                    {track.channel || 'Unknown artist'}
+                  </p>
+                </div>
+
+                {/* Duration */}
+                <div className="hidden sm:block text-body-sm font-semibold text-on-surface-variant shrink-0 px-2">
+                  {fmtDur(track.durationSec)}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleImportSong(track)}
+                    disabled={isImported || importingId === track.youtubeId}
+                    className={`flex items-center gap-1.5 rounded-xl py-2 px-4 text-body-sm font-bold transition-all cursor-pointer ${
                       isImported
                         ? 'bg-surface-variant/60 text-primary border border-primary/20'
                         : 'bg-primary-container text-on-primary-container hover:brightness-110 shadow-md'
