@@ -23,9 +23,12 @@ const PATH_TO_NAV = {
   '/export-import': 'export-import',
   '/settings': 'settings',
 }
-const NAV_TO_PATH = Object.fromEntries(
-  Object.entries(PATH_TO_NAV).map(([k, v]) => [v, k])
-)
+const NAV_TO_PATH = {
+  library: '/',
+  playlists: '/playlists',
+  'export-import': '/export-import',
+  settings: '/settings',
+}
 
 function App() {
   const navigate = useNavigate()
