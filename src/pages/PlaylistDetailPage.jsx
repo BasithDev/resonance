@@ -29,9 +29,9 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
   const [error, setError] = useState('')
   const [contextMenu, setContextMenu] = useState({ isOpen: false, song: null, pos: { x: 0, y: 0 } })
 
-  async function loadPlaylist() {
+  async function loadPlaylist(showSpinner = true) {
     try {
-      setLoading(true)
+      if (showSpinner) setLoading(true)
       setError('')
       const [details, pls] = await Promise.all([
         api.getPlaylistDetails(id),
@@ -42,12 +42,12 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
     } catch (err) {
       setError(err.message || 'Playlist not found')
     } finally {
-      setLoading(false)
+      if (showSpinner) setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadPlaylist()
+    loadPlaylist(true)
   }, [id])
 
   function handleOpenMenu(song, e) {
@@ -62,6 +62,7 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
   async function handleAddToPlaylist(song, targetPlaylistId) {
     try {
       await api.addSongToPlaylist(targetPlaylistId, song.id)
+      loadPlaylist(false)
     } catch (err) {
       alert(err.message || 'Failed to add song')
     }

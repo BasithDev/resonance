@@ -75,9 +75,9 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
   const [contextMenu, setContextMenu] = useState({ isOpen: false, song: null, pos: { x: 0, y: 0 } })
   const [playlistMenu, setPlaylistMenu] = useState({ isOpen: false, playlist: null, pos: { x: 0, y: 0 } })
 
-  async function loadData() {
+  async function loadData(showSpinner = true) {
     try {
-      setLoading(true)
+      if (showSpinner) setLoading(true)
       setError('')
       const [fetchedSongs, fetchedPlaylists] = await Promise.all([
         api.getSongs().catch(() => []),
@@ -88,12 +88,12 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
     } catch (err) {
       setError(err.message || 'Failed to load library')
     } finally {
-      setLoading(false)
+      if (showSpinner) setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadData()
+    loadData(true)
   }, [])
 
   function handleOpenMenu(song, e) {
@@ -117,7 +117,7 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
   async function handleAddToPlaylist(song, playlistId) {
     try {
       await api.addSongToPlaylist(playlistId, song.id)
-      loadData()
+      loadData(false)
     } catch (err) {
       alert(err.message || 'Failed to add song to playlist')
     }
