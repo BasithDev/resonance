@@ -70,22 +70,6 @@ function PlaylistCard({ playlist, onClick, onOpenMenu }) {
   )
 }
 
-// ── Create new card ───────────────────────────────────────────────────────────
-function CreateNewCard({ onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex aspect-square w-full cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-surface-variant bg-surface-container-low transition-colors duration-300 hover:border-primary/40 hover:bg-surface-container shadow-sm"
-    >
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant transition-all duration-300 group-hover:scale-110 group-hover:bg-primary-container group-hover:text-on-primary-container">
-        <Icon name="add" className="text-[32px]" />
-      </div>
-      <span className="text-headline-md font-bold text-on-surface">Create New</span>
-    </button>
-  )
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function PlaylistsPage({ onPlay }) {
   const navigate = useNavigate()
@@ -209,7 +193,6 @@ export default function PlaylistsPage({ onPlay }) {
 
       {/* Grid */}
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        <CreateNewCard onClick={() => setModalOpen(true)} />
         {/* Default All Songs playlist card */}
         <PlaylistCard
           playlist={{
