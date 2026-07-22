@@ -2,7 +2,6 @@ import Icon from './Icon.jsx'
 
 const NAV_ITEMS = [
   { id: 'library', label: 'Library', icon: 'library_music' },
-  { id: 'paste-link', label: 'Import Link', icon: 'link' },
   { id: 'playlists', label: 'Playlists', icon: 'playlist_play' },
   { id: 'export-import', label: 'Export/Import', icon: 'swap_vert' },
   { id: 'settings', label: 'Settings', icon: 'settings' },
@@ -28,14 +27,14 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
       {/* Brand + collapse toggle */}
       <div
         className={`mb-unit-lg flex items-center ${
-          collapsed ? 'justify-center' : 'justify-between px-2'
+          collapsed ? 'flex-col gap-3 justify-center' : 'justify-between px-2'
         }`}
       >
-        {!collapsed && (
-          <div className="flex items-center gap-3 overflow-hidden">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(255,89,89,0.25)]">
-              <Icon name="graphic_eq" filled />
-            </span>
+        <div className="flex items-center gap-3 overflow-hidden cursor-pointer" onClick={onToggle}>
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(255,89,89,0.25)]">
+            <Icon name="graphic_eq" filled />
+          </span>
+          {!collapsed && (
             <div className="overflow-hidden">
               <h1 className="truncate text-headline-md font-extrabold text-primary">
                 Resonance
@@ -44,13 +43,13 @@ function Sidebar({ collapsed, onToggle, active = 'library', onSelect, onCreate }
                 Premium Audio
               </p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         <button
           type="button"
           onClick={onToggle}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface cursor-pointer"
         >
           <Icon name={collapsed ? 'chevron_right' : 'chevron_left'} />
         </button>
