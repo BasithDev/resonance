@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import SongTable from '../components/SongTable.jsx'
 import SongContextMenu from '../components/SongContextMenu.jsx'
+import PlaylistContextMenu from '../components/PlaylistContextMenu.jsx'
 import Icon from '../components/Icon.jsx'
 import * as api from '../api/index.js'
 
@@ -16,38 +17,49 @@ function totalDuration(songs = []) {
   return songs.reduce((acc, s) => acc + (s.durationSec ?? 0), 0)
 }
 
-function LibraryPlaylistCard({ name, songs = [], coverUrl, onClick }) {
+function LibraryPlaylistCard({ playlist, onClick, onOpenMenu }) {
+  const name = playlist.name
+  const songs = playlist.songs || []
   const count = songs.length
   const dur = fmtDur(totalDuration(songs))
   const durText = dur && dur !== '0 min' ? ` · ${dur}` : ''
-  const img = coverUrl || songs[0]?.thumbnailUrl
+  const img = playlist.coverUrl || songs[0]?.thumbnailUrl
 
   return (
     <div
       onClick={onClick}
-      className="group flex cursor-pointer flex-col gap-2.5 rounded-xl border border-surface-variant bg-surface-container-low p-3 transition-all duration-300 hover:-translate-y-1 hover:bg-surface-container hover:shadow-lg"
+      className="group flex cursor-pointer flex-col gap-2.5 rounded-xl border border-surface-variant bg-surface-container-low p-3 transition-colors hover:bg-surface-container shadow-sm"
     >
       <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-surface-variant shadow-sm">
         {img ? (
-          <img src={img} alt={name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <img src={img} alt={name} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-surface-container-high text-on-surface-variant/30">
             <Icon name="queue_music" className="text-[40px]" />
           </div>
         )}
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-on-primary shadow-md transition-transform duration-200 hover:scale-110">
-            <Icon name="play_arrow" filled className="text-[22px] ml-0.5" />
-          </div>
-        </div>
       </div>
-      <div className="min-w-0">
-        <h3 className="truncate font-bold text-on-surface text-body-lg group-hover:text-primary transition-colors">
-          {name}
-        </h3>
-        <p className="truncate text-body-sm text-on-surface-variant/80 mt-0.5">
-          {count} {count === 1 ? 'Track' : 'Tracks'}{durText}
-        </p>
+
+      <div className="flex items-start justify-between">
+        <div className="min-w-0 flex-1 pr-1">
+          <h3 className="truncate font-bold text-on-surface text-body-lg group-hover:text-primary transition-colors">
+            {name}
+          </h3>
+          <p className="truncate text-body-sm text-on-surface-variant/80 mt-0.5">
+            {count} {count === 1 ? 'Track' : 'Tracks'}{durText}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenMenu?.(playlist, e)
+          }}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer"
+        >
+          <Icon name="more_vert" className="text-[20px]" />
+        </button>
       </div>
     </div>
   )
@@ -61,6 +73,7 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [contextMenu, setContextMenu] = useState({ isOpen: false, song: null, pos: { x: 0, y: 0 } })
+  const [playlistMenu, setPlaylistMenu] = useState({ isOpen: false, playlist: null, pos: { x: 0, y: 0 } })
 
   async function loadData() {
     try {
@@ -92,6 +105,15 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
     })
   }
 
+  function handleOpenPlaylistMenu(playlist, e) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setPlaylistMenu({
+      isOpen: true,
+      playlist,
+      pos: { x: rect.left, y: rect.bottom + 4 },
+    })
+  }
+
   async function handleAddToPlaylist(song, playlistId) {
     try {
       await api.addSongToPlaylist(playlistId, song.id)
@@ -107,6 +129,48 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
       setSongs((prev) => prev.filter((s) => s.id !== song.id))
     } catch (err) {
       alert(err.message || 'Failed to delete song')
+    }
+  }
+
+  function handlePlayPlaylist(playlist) {
+    const trackList = playlist.id === 'all-songs' ? songs : (playlist.songs || [])
+    if (trackList.length > 0) {
+      onPlay?.(trackList[0], trackList)
+    }
+  }
+
+  function handleShufflePlayPlaylist(playlist) {
+    const trackList = playlist.id === 'all-songs' ? songs : (playlist.songs || [])
+    if (trackList.length > 0) {
+      const shuffled = [...trackList]
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+      onPlay?.(shuffled[0], shuffled)
+    }
+  }
+
+  async function handleRenamePlaylist(playlist) {
+    if (playlist.id === 'all-songs') return
+    const newName = prompt('Enter new playlist name:', playlist.name)
+    if (!newName || !newName.trim() || newName.trim() === playlist.name) return
+    try {
+      await api.updatePlaylist(playlist.id, newName.trim())
+      setPlaylists(prev => prev.map(p => p.id === playlist.id ? { ...p, name: newName.trim() } : p))
+    } catch (err) {
+      alert(err.message || 'Failed to rename playlist')
+    }
+  }
+
+  async function handleDeletePlaylist(playlist) {
+    if (playlist.id === 'all-songs') return
+    if (!confirm(`Are you sure you want to delete playlist "${playlist.name}"?`)) return
+    try {
+      await api.deletePlaylist(playlist.id)
+      setPlaylists(prev => prev.filter(p => p.id !== playlist.id))
+    } catch (err) {
+      alert(err.message || 'Failed to delete playlist')
     }
   }
 
@@ -199,17 +263,21 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {/* Master All Songs Card */}
           <LibraryPlaylistCard
-            name="All Songs"
-            songs={songs}
+            playlist={{
+              id: 'all-songs',
+              name: 'All Songs',
+              songs: songs,
+              coverUrl: null,
+            }}
             onClick={() => navigate('/playlists/all-songs')}
+            onOpenMenu={handleOpenPlaylistMenu}
           />
           {playlists.map((pl) => (
             <LibraryPlaylistCard
               key={pl.id}
-              name={pl.name}
-              songs={pl.songs || []}
-              coverUrl={pl.coverUrl}
+              playlist={pl}
               onClick={() => navigate(`/playlists/${pl.id}`)}
+              onOpenMenu={handleOpenPlaylistMenu}
             />
           ))}
         </div>
@@ -224,6 +292,18 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
         onClose={() => setContextMenu((c) => ({ ...c, isOpen: false }))}
         onAddToPlaylist={handleAddToPlaylist}
         onDeleteSong={handleDeleteSong}
+      />
+
+      {/* Playlist options context menu */}
+      <PlaylistContextMenu
+        playlist={playlistMenu.playlist}
+        isOpen={playlistMenu.isOpen}
+        position={playlistMenu.pos}
+        onClose={() => setPlaylistMenu((c) => ({ ...c, isOpen: false }))}
+        onPlay={handlePlayPlaylist}
+        onShufflePlay={handleShufflePlayPlaylist}
+        onRename={handleRenamePlaylist}
+        onDelete={handleDeletePlaylist}
       />
     </div>
   )

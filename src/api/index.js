@@ -43,6 +43,7 @@ export const createPlaylist = (payload) => {
   const name = typeof payload === 'string' ? payload : payload?.name
   return post('/playlists', { name })
 }
+export const updatePlaylist       = (id, name)     => request('PATCH', `/playlists/${id}`, { name })
 export const deletePlaylist         = (id)           => del(`/playlists/${id}`)
 export const addSongToPlaylist     = (playlistId, songId) => post(`/playlists/${playlistId}/songs`, { songId })
 export const removeSongFromPlaylist = (playlistId, songId) => del(`/playlists/${playlistId}/songs/${songId}`)

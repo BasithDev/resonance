@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Icon from '../components/Icon.jsx'
 import CreatePlaylistModal from '../components/CreatePlaylistModal.jsx'
+import PlaylistContextMenu from '../components/PlaylistContextMenu.jsx'
 import * as api from '../api/index.js'
 
 function fmt(totalSec) {
@@ -17,98 +18,83 @@ function totalDuration(songs = []) {
 }
 
 // ── Playlist card ─────────────────────────────────────────────────────────────
-function PlaylistCard({ playlist, onClick }) {
+function PlaylistCard({ playlist, onClick, onOpenMenu }) {
   const songs = playlist.songs || []
   const count = songs.length
   const dur = fmt(totalDuration(songs))
   const durText = dur && dur !== '0 min' ? ` · ${dur}` : ''
 
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    <div
       onClick={onClick}
-      className="group flex cursor-pointer flex-col gap-3"
+      className="group flex cursor-pointer flex-col gap-3 rounded-2xl border border-surface-variant bg-surface-container-low p-4 shadow-md transition-colors hover:bg-surface-container"
     >
       {/* Cover */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-[16px]
-                      border border-[#333134] bg-surface-variant shadow-lg">
-        {playlist.coverUrl || songs[0]?.thumbnailUrl
-          ? <img
-              src={playlist.coverUrl || songs[0]?.thumbnailUrl}
-              alt={playlist.name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          : <div className="flex h-full w-full items-center justify-center bg-surface-container-high">
-              <Icon name="queue_music" className="text-[64px] text-on-surface-variant/30" />
-            </div>
-        }
-        {/* Hover play overlay */}
-        <div className="absolute inset-0 flex items-center justify-center
-                        bg-black/40 opacity-0 backdrop-blur-[2px]
-                        transition-opacity duration-300 group-hover:opacity-100">
-          <button
-            type="button"
-            onClick={e => { e.stopPropagation(); onClick?.() }}
-            aria-label={`Play ${playlist.name}`}
-            className="flex h-14 w-14 translate-y-3 items-center justify-center rounded-full
-                       bg-primary-container text-white shadow-[0_0_20px_rgba(255,89,89,0.4)]
-                       transition-all duration-300 group-hover:translate-y-0 hover:scale-105"
-          >
-            <Icon name="play_arrow" filled className="text-[32px] ml-0.5" />
-          </button>
-        </div>
+      <div className="relative aspect-square w-full overflow-hidden rounded-[16px] border border-surface-variant bg-surface-variant shadow-sm">
+        {playlist.coverUrl || songs[0]?.thumbnailUrl ? (
+          <img
+            src={playlist.coverUrl || songs[0]?.thumbnailUrl}
+            alt={playlist.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-surface-container-high">
+            <Icon name="queue_music" className="text-[64px] text-on-surface-variant/30" />
+          </div>
+        )}
       </div>
 
-      {/* Info */}
+      {/* Info & 3-Dot Menu */}
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1 pr-2">
-          <h3 className="truncate text-headline-md font-semibold text-on-surface
-                         transition-colors group-hover:text-primary">
+          <h3 className="truncate text-headline-md font-bold text-on-surface group-hover:text-primary transition-colors">
             {playlist.name}
           </h3>
-          <p className="text-body-sm text-on-surface-variant">
+          <p className="text-body-sm text-on-surface-variant mt-0.5">
             {count} {count === 1 ? 'Track' : 'Tracks'}{durText}
           </p>
         </div>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenMenu?.(playlist, e)
+          }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer"
+        >
+          <Icon name="more_vert" />
+        </button>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
 // ── Create new card ───────────────────────────────────────────────────────────
 function CreateNewCard({ onClick }) {
   return (
-    <motion.button
-      whileHover={{ y: -4 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    <button
       type="button"
       onClick={onClick}
-      className="group flex aspect-square min-h-[220px] w-full cursor-pointer flex-col
-                 items-center justify-center rounded-[16px] border border-dashed
-                 border-[#333134] bg-[#252426] transition-colors duration-300
-                 hover:border-primary/40 hover:bg-[#333134]"
+      className="group flex aspect-square w-full cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-surface-variant bg-surface-container-low transition-colors duration-300 hover:border-primary/40 hover:bg-surface-container shadow-sm"
     >
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full
-                      bg-surface-dim text-on-surface-variant
-                      transition-all duration-300
-                      group-hover:scale-110 group-hover:bg-primary-container
-                      group-hover:text-white group-hover:shadow-[0_0_20px_rgba(255,89,89,0.3)]">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant transition-all duration-300 group-hover:scale-110 group-hover:bg-primary-container group-hover:text-on-primary-container">
         <Icon name="add" className="text-[32px]" />
       </div>
-      <span className="text-headline-md font-semibold text-on-surface">Create New</span>
-    </motion.button>
+      <span className="text-headline-md font-bold text-on-surface">Create New</span>
+    </button>
   )
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function PlaylistsPage() {
+export default function PlaylistsPage({ onPlay }) {
   const navigate = useNavigate()
   const [playlists, setPlaylists] = useState([])
   const [allSongs, setAllSongs] = useState([])
   const [search, setSearch] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [contextMenu, setContextMenu] = useState({ isOpen: false, playlist: null, pos: { x: 0, y: 0 } })
 
   async function loadData() {
     try {
@@ -144,6 +130,57 @@ export default function PlaylistsPage() {
     }
   }
 
+  function handleOpenMenu(playlist, e) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setContextMenu({
+      isOpen: true,
+      playlist,
+      pos: { x: rect.left, y: rect.bottom + 4 },
+    })
+  }
+
+  function handlePlayPlaylist(playlist) {
+    const trackList = playlist.id === 'all-songs' ? allSongs : (playlist.songs || [])
+    if (trackList.length > 0) {
+      onPlay?.(trackList[0], trackList)
+    }
+  }
+
+  function handleShufflePlayPlaylist(playlist) {
+    const trackList = playlist.id === 'all-songs' ? allSongs : (playlist.songs || [])
+    if (trackList.length > 0) {
+      const shuffled = [...trackList]
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+      onPlay?.(shuffled[0], shuffled)
+    }
+  }
+
+  async function handleRenamePlaylist(playlist) {
+    if (playlist.id === 'all-songs') return
+    const newName = prompt('Enter new playlist name:', playlist.name)
+    if (!newName || !newName.trim() || newName.trim() === playlist.name) return
+    try {
+      await api.updatePlaylist(playlist.id, newName.trim())
+      setPlaylists(prev => prev.map(p => p.id === playlist.id ? { ...p, name: newName.trim() } : p))
+    } catch (err) {
+      alert(err.message || 'Failed to rename playlist')
+    }
+  }
+
+  async function handleDeletePlaylist(playlist) {
+    if (playlist.id === 'all-songs') return
+    if (!confirm(`Are you sure you want to delete playlist "${playlist.name}"?`)) return
+    try {
+      await api.deletePlaylist(playlist.id)
+      setPlaylists(prev => prev.filter(p => p.id !== playlist.id))
+    } catch (err) {
+      alert(err.message || 'Failed to delete playlist')
+    }
+  }
+
   return (
     <div className="flex flex-col gap-unit-xl">
       {/* Page header */}
@@ -165,11 +202,7 @@ export default function PlaylistsPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Find a playlist…"
-            className="w-full rounded-full border border-transparent bg-[#252426]
-                       py-3 pl-12 pr-4 text-body-lg text-on-surface
-                       placeholder:text-surface-variant
-                       transition-colors duration-200
-                       focus:border-primary-container focus:outline-none"
+            className="w-full rounded-full border border-surface-variant bg-surface-container-low py-3 pl-12 pr-4 text-body-lg text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary focus:outline-none"
           />
         </div>
       </div>
@@ -186,12 +219,14 @@ export default function PlaylistsPage() {
             coverUrl: null,
           }}
           onClick={() => navigate('/playlists/all-songs')}
+          onOpenMenu={handleOpenMenu}
         />
         {filtered.map(pl => (
           <PlaylistCard
             key={pl.id}
             playlist={pl}
             onClick={() => navigate(`/playlists/${pl.id}`)}
+            onOpenMenu={handleOpenMenu}
           />
         ))}
         {filtered.length === 0 && search && (
@@ -207,6 +242,18 @@ export default function PlaylistsPage() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onCreate={handleCreate}
+      />
+
+      {/* Playlist Context Menu */}
+      <PlaylistContextMenu
+        playlist={contextMenu.playlist}
+        isOpen={contextMenu.isOpen}
+        position={contextMenu.pos}
+        onClose={() => setContextMenu(c => ({ ...c, isOpen: false }))}
+        onPlay={handlePlayPlaylist}
+        onShufflePlay={handleShufflePlayPlaylist}
+        onRename={handleRenamePlaylist}
+        onDelete={handleDeletePlaylist}
       />
     </div>
   )
