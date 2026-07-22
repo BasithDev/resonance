@@ -419,7 +419,11 @@ function App() {
                 playerTrack={playerTrack}
                 isPlaying={isPlaying}
                 isAudioLoading={isAudioLoading}
+                repeatMode={repeatMode}
+                shuffleOn={shuffleOn}
                 onPlay={playTrack}
+                onCycleRepeat={cycleRepeatMode}
+                onToggleShuffle={toggleShuffle}
               />
             } />
             <Route path="/export-import" element={<ExportImportPage />} />

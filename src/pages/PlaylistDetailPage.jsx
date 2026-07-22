@@ -19,7 +19,15 @@ function totalLabel(songs = []) {
   return h > 0 ? `${h} hr ${m} min` : `${m} min`
 }
 
-export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
+export default function PlaylistDetailPage({
+  playerTrack,
+  isPlaying,
+  repeatMode = 'none',
+  shuffleOn = false,
+  onPlay,
+  onCycleRepeat,
+  onToggleShuffle,
+}) {
   const { id } = useParams()
   const navigate = useNavigate()
 
@@ -91,6 +99,19 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
       navigate('/playlists')
     } catch (err) {
       alert(err.message || 'Failed to delete playlist')
+    }
+  }
+
+  function handleShufflePlay() {
+    const trackList = playlist?.songs || []
+    if (trackList.length > 0) {
+      if (!shuffleOn) onToggleShuffle?.()
+      const shuffled = [...trackList]
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+      onPlay?.(shuffled[0], shuffled)
     }
   }
 
@@ -188,17 +209,50 @@ export default function PlaylistDetailPage({ playerTrack, isPlaying, onPlay }) {
 
           {/* Action bar */}
           <div className="mt-4 flex flex-wrap items-center gap-3">
+            {/* Play All */}
             <button
               disabled={songs.length === 0}
               onClick={() => songs.length && onPlay?.(songs[0], songs)}
               className="flex items-center gap-2 rounded-full bg-primary-container
-                         px-8 py-3 font-semibold text-headline-md text-on-primary-container
+                         px-7 py-3 font-semibold text-headline-md text-on-primary-container
                          shadow-[0_0_20px_rgba(255,89,89,0.2)]
                          transition-all hover:brightness-110 hover:scale-105 disabled:opacity-50 cursor-pointer"
             >
-              <Icon name="play_arrow" filled />
-              Play All
+              <Icon name="play_arrow" filled className="text-[24px]" />
+              <span>Play All</span>
             </button>
+
+            {/* Shuffle Play */}
+            <button
+              disabled={songs.length === 0}
+              onClick={handleShufflePlay}
+              title="Shuffle Play Playlist"
+              className={`flex items-center gap-2 rounded-full px-5 py-3 font-semibold text-body-sm transition-all hover:scale-105 disabled:opacity-50 cursor-pointer ${
+                shuffleOn
+                  ? 'bg-primary text-on-primary shadow-[0_0_15px_rgba(255,89,89,0.3)]'
+                  : 'border border-surface-variant/80 bg-surface-container-high text-on-surface hover:bg-surface-container'
+              }`}
+            >
+              <Icon name="shuffle" className="text-[20px]" />
+              <span>Shuffle Play</span>
+            </button>
+
+            {/* Loop / Repeat Playlist */}
+            <button
+              disabled={songs.length === 0}
+              onClick={onCycleRepeat}
+              title={`Repeat Mode: ${repeatMode === 'one' ? 'Repeat Track' : repeatMode === 'all' ? 'Repeat Playlist' : 'Off'}`}
+              className={`flex items-center gap-2 rounded-full px-5 py-3 font-semibold text-body-sm transition-all hover:scale-105 disabled:opacity-50 cursor-pointer ${
+                repeatMode !== 'none'
+                  ? 'bg-primary text-on-primary shadow-[0_0_15px_rgba(255,89,89,0.3)]'
+                  : 'border border-surface-variant/80 bg-surface-container-high text-on-surface hover:bg-surface-container'
+              }`}
+            >
+              <Icon name={repeatMode === 'one' ? 'repeat_one' : 'repeat'} className="text-[20px]" />
+              <span>{repeatMode === 'one' ? 'Loop Track' : repeatMode === 'all' ? 'Loop Playlist' : 'Loop Off'}</span>
+            </button>
+
+            {/* Delete Playlist */}
             {id !== 'all-songs' && (
               <button
                 type="button"
