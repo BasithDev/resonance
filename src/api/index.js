@@ -21,16 +21,29 @@ async function request(method, path, body) {
   return res.json()
 }
 
-const get  = (path)        => request('GET',  path)
-const post = (path, body)  => request('POST', path, body)
+const get  = (path)        => request('GET',    path)
+const post = (path, body)  => request('POST',   path, body)
+const del  = (path)        => request('DELETE', path)
 
 // ---------- Preview (no DB required) ----------
 export const previewVideo    = (url) => post('/preview',          { url })
 export const previewPlaylist = (url) => post('/preview/playlist', { url })
 
 // ---------- Import (requires DB) ----------
-export const batchImportSongs = (songs) => post('/songs/batch', { songs })
+export const batchImportSongs = (songs, playlistId) => post('/songs/batch', { songs, playlistId })
 
-// ---------- Library ----------
-export const getSongs     = ()   => get('/songs')
-export const getPlaylists = ()   => get('/playlists')
+// ---------- Library / Songs ----------
+export const getSongs   = ()   => get('/songs')
+export const deleteSong = (id) => del(`/songs/${id}`)
+
+// ---------- Playlists ----------
+export const getPlaylists           = ()             => get('/playlists')
+export const getPlaylistDetails     = (id)           => get(`/playlists/${id}`)
+export const createPlaylist = (payload) => {
+  const name = typeof payload === 'string' ? payload : payload?.name
+  return post('/playlists', { name })
+}
+export const deletePlaylist         = (id)           => del(`/playlists/${id}`)
+export const addSongToPlaylist     = (playlistId, songId) => post(`/playlists/${playlistId}/songs`, { songId })
+export const removeSongFromPlaylist = (playlistId, songId) => del(`/playlists/${playlistId}/songs/${songId}`)
+

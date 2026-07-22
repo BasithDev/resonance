@@ -1,0 +1,436 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Resonance - Your Playlists</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-dim": "#141315",
+                      "on-surface-variant": "#e2bebb",
+                      "surface-variant": "#363436",
+                      "on-secondary-fixed": "#1a1c1c",
+                      "on-secondary-container": "#b4b5b5",
+                      "surface-container-lowest": "#0f0e10",
+                      "secondary-container": "#454747",
+                      "error-container": "#93000a",
+                      "primary-fixed": "#ffdad7",
+                      "inverse-primary": "#b6232b",
+                      "on-background": "#e6e1e4",
+                      "tertiary-fixed-dim": "#5adcb2",
+                      "on-error": "#690005",
+                      "surface-container-low": "#1c1b1d",
+                      "on-primary": "#68000d",
+                      "tertiary-fixed": "#79f9cd",
+                      "on-tertiary-fixed": "#002117",
+                      "error": "#ffb4ab",
+                      "outline": "#a98987",
+                      "on-tertiary-container": "#003325",
+                      "on-tertiary-fixed-variant": "#00513d",
+                      "primary-fixed-dim": "#ffb3af",
+                      "surface-container-highest": "#363436",
+                      "outline-variant": "#5a403f",
+                      "on-primary-fixed": "#410005",
+                      "surface-container": "#201f21",
+                      "surface-bright": "#3a393b",
+                      "on-error-container": "#ffdad6",
+                      "inverse-surface": "#e6e1e4",
+                      "background": "#141315",
+                      "secondary-fixed": "#e2e2e2",
+                      "on-secondary-fixed-variant": "#454747",
+                      "surface": "#141315",
+                      "tertiary-container": "#00a780",
+                      "on-primary-container": "#60000b",
+                      "surface-tint": "#ffb3af",
+                      "on-secondary": "#2f3131",
+                      "secondary": "#c6c6c7",
+                      "surface-container-high": "#2b292c",
+                      "primary": "#ffb3af",
+                      "on-tertiary": "#003829",
+                      "secondary-fixed-dim": "#c6c6c7",
+                      "inverse-on-surface": "#313032",
+                      "tertiary": "#5adcb2",
+                      "primary-container": "#ff5959",
+                      "on-primary-fixed-variant": "#930017",
+                      "on-surface": "#e6e1e4"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit-xl": "64px",
+                      "unit-xs": "4px",
+                      "unit-lg": "32px",
+                      "margin-desktop": "40px",
+                      "unit-md": "16px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "unit-sm": "8px",
+                      "container-max": "1440px"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-xl": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        /* Custom glow for interactive elements */
+        .glow-hover:hover {
+            box-shadow: 0 0 20px rgba(255, 89, 89, 0.15);
+        }
+        
+        /* Smooth scale animation for album covers */
+        .group:hover .cover-image {
+            transform: scale(1.05);
+        }
+        
+        /* Fade in play button on hover */
+        .group:hover .play-overlay {
+            opacity: 1;
+        }
+
+        /* Focus state for input */
+        input:focus {
+            outline: none;
+            border-color: #ff5959;
+            box-shadow: none;
+        }
+        
+        /* Hide scrollbar for a cleaner look if content overflows */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #141315;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #363436;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #454747;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-lg antialiased overflow-hidden selection:bg-primary-container selection:text-white">
+<div class="flex h-screen w-full">
+<!-- Side Navigation Bar -->
+<nav class="hidden md:flex flex-col fixed left-0 top-0 h-full w-[280px] bg-surface-container-low border-r border-surface-variant z-10 py-unit-lg px-unit-md gap-unit-sm">
+<!-- Brand / Header -->
+<div class="flex items-center gap-unit-md mb-unit-lg px-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A small, stylized avatar image representing a user profile. The image should feature a minimal, abstract geometric design using dark gray, black, and coral red accents to fit the high-end audio app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkuG781do2_5UFzLtfj8THoGyz8TSvrVi6tOvIcN6xawrVv2cEIhZBDEbCzJhB_2aGLmc-h57zA03gFdwEoewDPVHptRfs_t8nXiK2ljGHHw5PiE3I5ygGvYqXDvDefJNUVYhmI-VTPDKPXyw5GkJAHbEV6bk93mIzDsSgoooQhrWl9OmuGteiMQk5VTBToWbXqBP3JN0UK7j-vK7a8Mr_Oh0F9iOz5zP-bupO5VFRumhoJs9UlHmnqT-23FGfKkamJGaLLiD9FxY">
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-extrabold text-primary">Resonance</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Premium Audio</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-unit-md text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="library_music">library_music</span>
+<span class="font-body-lg text-body-lg">Library</span>
+</a>
+<a class="flex items-center gap-unit-md text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="link">link</span>
+<span class="font-body-lg text-body-lg">Paste Link</span>
+</a>
+<a class="flex items-center gap-unit-md text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="swap_vert">swap_vert</span>
+<span class="font-body-lg text-body-lg">Export/Import</span>
+</a>
+<a class="flex items-center gap-unit-md text-primary font-semibold bg-surface-container-highest rounded-lg px-4 py-3 shadow-[0_0_20px_rgba(255,89,89,0.15)] transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="playlist_play" data-weight="fill" style="font-variation-settings: 'FILL' 1;">playlist_play</span>
+<span class="font-body-lg text-body-lg">Playlists</span>
+</a>
+<a class="flex items-center gap-unit-md text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-body-lg text-body-lg">Favorites</span>
+</a>
+</div>
+<!-- CTA Button -->
+<div class="mt-auto pt-4">
+<button class="w-full flex items-center justify-center gap-2 bg-primary-container text-white py-3 px-4 rounded-lg font-headline-md text-body-sm font-semibold hover:bg-[#ff7373] transition-colors duration-200 shadow-[0_4px_14px_rgba(255,89,89,0.3)]">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                    Create Playlist
+                </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-[280px] h-full overflow-y-auto pb-32">
+<div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-unit-xl">
+<!-- Page Header & Actions -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+<div>
+<h1 class="font-headline-xl text-headline-xl md:text-headline-xl text-white mb-2">Your Playlists</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Manage and curate your collection.</p>
+</div>
+<!-- Search / Filter -->
+<div class="relative w-full md:w-72">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-[#252426] border border-transparent text-on-surface font-body-lg rounded-full py-3 pl-12 pr-4 transition-colors duration-200 focus:border-primary-container placeholder:text-surface-variant" placeholder="Find a playlist..." type="text">
+</div>
+</div>
+<!-- Playlists Grid -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+<!-- Create New Card -->
+<button class="flex flex-col items-center justify-center bg-[#252426] border border-[#333134] border-dashed rounded-[16px] aspect-square hover:bg-[#333134] transition-colors duration-300 group cursor-pointer h-full min-h-[220px]">
+<div class="w-16 h-16 rounded-full bg-surface-dim flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 group-hover:bg-primary-container group-hover:text-white group-hover:shadow-[0_0_20px_rgba(255,89,89,0.3)] text-on-surface-variant">
+<span class="material-symbols-outlined text-[32px]" data-icon="add">add</span>
+</div>
+<span class="font-headline-md text-headline-md text-on-surface">Create New</span>
+</button>
+<!-- Playlist Card 1 -->
+<div class="group flex flex-col gap-3 cursor-pointer">
+<!-- Cover Art Container -->
+<div class="relative rounded-[16px] overflow-hidden aspect-square bg-surface-variant shadow-lg border border-[#333134]">
+<img class="w-full h-full object-cover transition-transform duration-500 cover-image" data-alt="A moody, high-contrast album cover for a 'Late Night Grooves' playlist. Features a dark cityscape at night illuminated by scattered neon lights, rendered in a minimal, professional aesthetic with deep blacks and vibrant coral-red accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZXlwTkaWelF3h5wdcXAkF8sIl0oRRS_UAC14lof-toPHC6RmhNdLtg9GPwtzw7P2XAjRQy5kbPtoI7rjZIlZHshWneRQJDQ2OfQNc1HyjXL5aCnIja7Kh9ozN8YRr9WzzzGZSQ08IrLltWWUQ4alzdZnXVtxLEC4Nmh13XQ0Sl_wDRfSntXv4Nir7XB_pjJYQQKDTP5SrMuVZmcVrcP0BbDHKj6wWmVwXoufi5f1Cylh3Ovkk2j_z0Lvgg1li3n2TBYt9_wabIIo">
+<!-- Overlay -->
+<div class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 play-overlay flex items-center justify-center backdrop-blur-[2px]">
+<button class="w-14 h-14 rounded-full bg-primary-container text-white flex items-center justify-center shadow-[0_0_20px_rgba(255,89,89,0.4)] transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+<span class="material-symbols-outlined text-[32px] ml-1" data-icon="play_arrow" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Info -->
+<div class="flex items-start justify-between">
+<div class="flex-1 pr-2">
+<h3 class="font-headline-md text-headline-md text-white truncate mb-1 group-hover:text-primary transition-colors">Late Night Grooves</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">42 Tracks • 2 hr 15 min</p>
+</div>
+<button class="text-on-surface-variant hover:text-white transition-colors p-1">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Playlist Card 2 -->
+<div class="group flex flex-col gap-3 cursor-pointer">
+<div class="relative rounded-[16px] overflow-hidden aspect-square bg-surface-variant shadow-lg border border-[#333134]">
+<img class="w-full h-full object-cover transition-transform duration-500 cover-image" data-alt="An electronic music album cover for a 'Synthwave Essentials' playlist. Features an abstract, glowing wireframe grid extending into the horizon over a dark background. The dominant colors are deep slate gray and glowing coral-red, evoking a high-end futuristic studio vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCy4MhNFkXdkbHH49NcEqakc9ZbccNUjVY_cPKLC4j940l3VdCgrPfs1oI_Q8qRYxlMWegy5mB3t5BHnHTeGNM7ZwueuGS-JBbIyVOpwqzcwZ-7OxLB-_e1Z-6TWEl3xQKSI9T-x3JO_FRexKLBzDxFwJqlmvXq34syXzzTTyl2ZfjxEAKuJaThr5Z80lTSwbJoo7reYvK_4yvnTFAqZKgRiVej0rJ6isVdAuiFIo8NQfz_bIgymHPWXXWr7sb6zg1X3QiwoM12Ps">
+<div class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 play-overlay flex items-center justify-center backdrop-blur-[2px]">
+<button class="w-14 h-14 rounded-full bg-primary-container text-white flex items-center justify-center shadow-[0_0_20px_rgba(255,89,89,0.4)] transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+<span class="material-symbols-outlined text-[32px] ml-1" data-icon="play_arrow" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+</div>
+<div class="flex items-start justify-between">
+<div class="flex-1 pr-2">
+<h3 class="font-headline-md text-headline-md text-white truncate mb-1 group-hover:text-primary transition-colors">Synthwave Essentials</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">28 Tracks • 1 hr 45 min</p>
+</div>
+<button class="text-on-surface-variant hover:text-white transition-colors p-1">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Playlist Card 3 -->
+<div class="group flex flex-col gap-3 cursor-pointer">
+<div class="relative rounded-[16px] overflow-hidden aspect-square bg-surface-variant shadow-lg border border-[#333134]">
+<img class="w-full h-full object-cover transition-transform duration-500 cover-image" data-alt="A minimalist album cover for a 'Focus &amp; Flow' playlist. The artwork displays soft, blurred ambient gradients transitioning from deep charcoal to near black, with a subtle, sharp coral-red geometric line cutting through the center to signify focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpCHi5vEzxo2aPx88an1WEqDfWWpIBDGf8uzK-UtFK6dMBTO184AOuFTa2LxkpeISFKfxha7i1FvMym6Cl_IQEPbnWplwPyUqCcc6AF0cKMt3GKseQX1BzpD0s_4_6aguQYICwBi2-hUoS2VNyQeNW3V9uFH43Mh-Hnwqh4iJ9hWIJ10Nv6gqIWW1AdH8hSQG-9yfpnBFgCJNPqAFuhMqlRoVR4ZywmEi_U_mn4iy8vnTHvCMHiQUm90z7XSE1Dg0_0nQl6rPUS9E">
+<div class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 play-overlay flex items-center justify-center backdrop-blur-[2px]">
+<button class="w-14 h-14 rounded-full bg-primary-container text-white flex items-center justify-center shadow-[0_0_20px_rgba(255,89,89,0.4)] transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+<span class="material-symbols-outlined text-[32px] ml-1" data-icon="play_arrow" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+</div>
+<div class="flex items-start justify-between">
+<div class="flex-1 pr-2">
+<h3 class="font-headline-md text-headline-md text-white truncate mb-1 group-hover:text-primary transition-colors">Focus &amp; Flow</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">56 Tracks • 4 hr 10 min</p>
+</div>
+<button class="text-on-surface-variant hover:text-white transition-colors p-1">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Playlist Card 4 -->
+<div class="group flex flex-col gap-3 cursor-pointer">
+<div class="relative rounded-[16px] overflow-hidden aspect-square bg-surface-variant shadow-lg border border-[#333134]">
+<img class="w-full h-full object-cover transition-transform duration-500 cover-image" data-alt="A high-energy album cover for a 'Workout Mix' playlist. Features a close-up, abstract macro shot of dark, textured studio equipment or a sound wave graphic. The image is stark and aggressive, utilizing heavy blacks and sharp, saturated coral-red accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnCOfjnCyM8vJYXP7xzh0LOuxV28HNQEdfDbF1PkwmgXKkDeI5k1WsqHsKfvrGD5QIC8qM27wuIOcRLdMIgc9okp72ppNeUNJ2mvzoLx_GKzgQXFPmK0UuyYzYQVfuA8JsUQWmgC0VN7TJ3zI7l3YEayax9_pzJrrt6RnpxI4lfdAhkQuH6Gs8Sgp1Bn7K02g5tXp8W6eUwwWaZ3uYo-X4mb6UFU68psNXHhdWaaX0h_usFxHPiiiK3mQKishqyjQ_c8OBKfeeAFc">
+<div class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 play-overlay flex items-center justify-center backdrop-blur-[2px]">
+<button class="w-14 h-14 rounded-full bg-primary-container text-white flex items-center justify-center shadow-[0_0_20px_rgba(255,89,89,0.4)] transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+<span class="material-symbols-outlined text-[32px] ml-1" data-icon="play_arrow" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+</div>
+<div class="flex items-start justify-between">
+<div class="flex-1 pr-2">
+<h3 class="font-headline-md text-headline-md text-white truncate mb-1 group-hover:text-primary transition-colors">Workout Mix</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">34 Tracks • 2 hr 05 min</p>
+</div>
+<button class="text-on-surface-variant hover:text-white transition-colors p-1">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Playlist Card 5 -->
+<div class="group flex flex-col gap-3 cursor-pointer">
+<div class="relative rounded-[16px] overflow-hidden aspect-square bg-surface-variant shadow-lg border border-[#333134]">
+<img class="w-full h-full object-cover transition-transform duration-500 cover-image" data-alt="An eclectic album cover for a 'Discovered Favorites' playlist. The artwork consists of fragmented, geometric shapes overlapping each other, creating a sense of depth and discovery. The palette is strictly dark grays, stark blacks, and a solitary, bright coral-red shape acting as the focal point." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA94LKFZxBkERCowA7-SMlaSKHRrq24Y0zDUMX8HeFrI1cYHyvkJmkGIfTt785NE5eL6Qh1SsbfdUneN_C6PQhNEAY9Uo3gCzEMRtuFTXlZ66DcRv0kVjaogw7jzVIhM_d9-pxq0_LdNiJs9mula7Bpi9ZtxDpQ7ysup3TtqyX_Wm2bCsuxDCW2SlKaoUeH8sXDq6Ly2vKEGnQOs_VBhHYmbcQXSPqnxBTv9QdNie9C0EXzQ143HySG_vhy2oSdMlXilghvXOfbcYc">
+<div class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 play-overlay flex items-center justify-center backdrop-blur-[2px]">
+<button class="w-14 h-14 rounded-full bg-primary-container text-white flex items-center justify-center shadow-[0_0_20px_rgba(255,89,89,0.4)] transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+<span class="material-symbols-outlined text-[32px] ml-1" data-icon="play_arrow" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+</div>
+<div class="flex items-start justify-between">
+<div class="flex-1 pr-2">
+<h3 class="font-headline-md text-headline-md text-white truncate mb-1 group-hover:text-primary transition-colors">Discovered Favorites</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">112 Tracks • 6 hr 30 min</p>
+</div>
+<button class="text-on-surface-variant hover:text-white transition-colors p-1">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Persistent Bottom Mini Player -->
+<div class="fixed bottom-0 left-0 w-full z-50 h-24 bg-[#141315]/90 backdrop-blur-xl border-t border-[#333134] flex items-center justify-between px-6 md:px-margin-desktop md:pl-[320px] transition-all">
+<!-- Now Playing Info -->
+<div class="flex items-center gap-4 w-1/3">
+<div class="w-14 h-14 rounded-lg bg-surface-variant overflow-hidden border border-[#333134] flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A small thumbnail image of an album cover for the currently playing track. It features a dark, abstract texture with a slight coral-red tint, fitting the premium editorial style of the music app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCclgqFfnjyRl1ZcLCFsd3OzVeuMEFGF48Vx9uwHTCZyy2CabTBPgN-YWhzKTNxrHFUSF-HKTqgaPkU1HU9I_HvCaDPykNb-GffQRhUhqF2kZOr1M8-RSWY3MhfYjTNCVKFq-UbcFGN4WVXnVXBIxGZ1EvJgg0vlNJW_ptRoyd9x6iswnx-tX_GdX2P7pgvVtAuGIXDf8Bli9rc7DAHkW3nvGJ-EXo0rFb5dcBm7WC3777id_oaSp0ByfELTwjfHwze26W8ztTYUTE">
+</div>
+<div class="hidden sm:block truncate pr-4">
+<h4 class="font-headline-md text-body-sm font-semibold text-white truncate hover:underline cursor-pointer">Midnight City</h4>
+<p class="font-body-sm text-[12px] text-on-surface-variant truncate hover:underline cursor-pointer">M83</p>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors hidden sm:block">
+<span class="material-symbols-outlined text-[20px]" data-icon="favorite">favorite</span>
+</button>
+</div>
+<!-- Player Controls & Progress -->
+<div class="flex flex-col items-center justify-center flex-1 max-w-2xl px-4">
+<div class="flex items-center gap-6 mb-2">
+<button class="text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="shuffle">shuffle</span>
+</button>
+<button class="text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]" data-icon="skip_previous" data-weight="fill" style="font-variation-settings: 'FILL' 1;">skip_previous</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform hover:shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+<span class="material-symbols-outlined text-[24px]" data-icon="pause" data-weight="fill" style="font-variation-settings: 'FILL' 1;">pause</span>
+</button>
+<button class="text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]" data-icon="skip_next" data-weight="fill" style="font-variation-settings: 'FILL' 1;">skip_next</span>
+</button>
+<button class="text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="repeat">repeat</span>
+</button>
+</div>
+<!-- Progress Bar -->
+<div class="flex items-center w-full gap-3 group">
+<span class="font-label-caps text-[11px] text-on-surface-variant w-8 text-right">2:14</span>
+<div class="flex-1 h-1.5 bg-[#333134] rounded-full relative cursor-pointer overflow-hidden">
+<!-- Filled Progress -->
+<div class="absolute top-0 left-0 h-full w-1/3 bg-white group-hover:bg-primary-container rounded-full transition-colors"></div>
+</div>
+<span class="font-label-caps text-[11px] text-on-surface-variant w-8">4:01</span>
+</div>
+</div>
+<!-- Right Controls (Volume, etc) -->
+<div class="flex items-center justify-end gap-4 w-1/3 text-on-surface-variant hidden md:flex">
+<button class="hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="mic">mic</span>
+</button>
+<button class="hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="queue_music">queue_music</span>
+</button>
+<div class="flex items-center gap-2 group cursor-pointer w-24">
+<span class="material-symbols-outlined text-[20px]" data-icon="volume_up">volume_up</span>
+<div class="flex-1 h-1.5 bg-[#333134] rounded-full relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-2/3 bg-white group-hover:bg-primary-container rounded-full transition-colors"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

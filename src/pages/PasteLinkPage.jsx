@@ -72,12 +72,17 @@ function SkeletonRow() {
 }
 
 // ─── Single-video resolved view ───────────────────────────────────────────────
-function VideoPreview({ track, onImport, importing, importError }) {
+function VideoPreview({ track, userPlaylists = [], onImport, onPlay, importing, importError }) {
+  const [targetPlaylist, setTargetPlaylist] = useState('')
+
   return (
     <section className="overflow-hidden rounded-xl border border-surface-variant bg-surface-container">
       <div className="flex flex-col gap-unit-md border-b border-surface-variant bg-surface-container-low/50 p-unit-md md:flex-row md:gap-gutter md:p-gutter">
         {/* Thumbnail */}
-        <div className="group relative aspect-video w-full overflow-hidden rounded-lg bg-surface-dim shadow-lg md:w-72">
+        <div
+          onClick={() => onPlay?.(track)}
+          className="group relative aspect-video w-full cursor-pointer overflow-hidden rounded-lg bg-surface-dim shadow-lg md:w-72"
+        >
           {track.thumbnailUrl ? (
             <img
               src={track.thumbnailUrl}
@@ -126,25 +131,58 @@ function VideoPreview({ track, onImport, importing, importError }) {
             {importError}
           </p>
         )}
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={onImport}
-            disabled={importing}
-            className="flex items-center gap-2 rounded-lg bg-primary px-8 py-3 font-semibold text-on-primary shadow-[0_0_15px_rgba(255,89,89,0.25)] transition-all hover:brightness-110 disabled:opacity-50"
-          >
-            {importing ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-on-primary/30 border-t-on-primary" />
-                Importing…
-              </>
-            ) : (
-              <>
-                <Icon name="download" />
-                Import Track
-              </>
-            )}
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Target Playlist Selector */}
+          <div className="flex items-center gap-3">
+            <label htmlFor="playlist-select" className="text-body-sm text-on-surface-variant">
+              Add to Playlist:
+            </label>
+            <select
+              id="playlist-select"
+              value={targetPlaylist}
+              onChange={(e) => setTargetPlaylist(e.target.value)}
+              className="rounded-lg border border-surface-variant bg-surface-container-high px-3 py-2 text-body-sm text-on-surface focus:border-primary focus:outline-none"
+            >
+              <option value="">All Songs (Default)</option>
+              {userPlaylists.map((pl) => (
+                <option key={pl.id} value={pl.id}>
+                  {pl.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Play Now Button */}
+            <button
+              type="button"
+              onClick={() => onPlay?.(track)}
+              className="flex items-center gap-2 rounded-lg border border-surface-variant bg-surface-container-high px-5 py-3 font-semibold text-on-surface transition-colors hover:bg-surface-container-highest"
+            >
+              <Icon name="play_arrow" filled />
+              Play Now
+            </button>
+
+            {/* Import Button */}
+            <button
+              type="button"
+              onClick={() => onImport(targetPlaylist)}
+              disabled={importing}
+              className="flex items-center gap-2 rounded-lg bg-primary px-7 py-3 font-semibold text-on-primary shadow-[0_0_15px_rgba(255,89,89,0.25)] transition-all hover:brightness-110 disabled:opacity-50"
+            >
+              {importing ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-on-primary/30 border-t-on-primary" />
+                  Importing…
+                </>
+              ) : (
+                <>
+                  <Icon name="download" />
+                  Import Track
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -152,9 +190,10 @@ function VideoPreview({ track, onImport, importing, importError }) {
 }
 
 // ─── Playlist resolved view ───────────────────────────────────────────────────
-function PlaylistPreview({ data, onImport, importing, importError }) {
+function PlaylistPreview({ data, userPlaylists = [], onImport, onPlay, importing, importError }) {
   const { tracks } = data
   const [selected, setSelected] = useState(() => new Set(tracks.map((t) => t.youtubeId)))
+  const [targetPlaylist, setTargetPlaylist] = useState('')
 
   const allSelected = selected.size === tracks.length
   const noneSelected = selected.size === 0
@@ -249,10 +288,17 @@ function PlaylistPreview({ data, onImport, importing, importError }) {
                 <span className="w-6 text-center text-body-sm text-on-surface-variant group-hover:hidden">
                   {i + 1}
                 </span>
-                <Icon
-                  name="play_arrow"
-                  className="hidden w-6 text-center text-primary group-hover:block"
-                />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onPlay?.(track, tracks)
+                  }}
+                  title="Play Now"
+                  className="hidden w-6 text-center text-primary group-hover:block hover:scale-125 transition-transform"
+                >
+                  <Icon name="play_arrow" filled />
+                </button>
                 <span className="truncate text-body-lg text-on-surface">{track.title}</span>
                 {track.channel && (
                   <span className="hidden shrink-0 truncate text-body-sm text-on-surface-variant md:block">
@@ -275,28 +321,50 @@ function PlaylistPreview({ data, onImport, importing, importError }) {
             {importError}
           </p>
         )}
-        <div className="flex items-center justify-end gap-4">
-          <span className="text-body-sm text-on-surface-variant">
-            {selected.size} of {tracks.length} selected
-          </span>
-          <button
-            type="button"
-            onClick={() => onImport(tracks.filter((t) => selected.has(t.youtubeId)))}
-            disabled={importing || selected.size === 0}
-            className="flex items-center gap-2 rounded-lg bg-primary px-8 py-3 font-semibold text-on-primary shadow-[0_0_15px_rgba(255,89,89,0.25)] transition-all hover:brightness-110 disabled:opacity-50"
-          >
-            {importing ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-on-primary/30 border-t-on-primary" />
-                Importing…
-              </>
-            ) : (
-              <>
-                <Icon name="download" />
-                Import Selected ({selected.size})
-              </>
-            )}
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Target Playlist Selector */}
+          <div className="flex items-center gap-3">
+            <label htmlFor="pl-select" className="text-body-sm text-on-surface-variant">
+              Add to Playlist:
+            </label>
+            <select
+              id="pl-select"
+              value={targetPlaylist}
+              onChange={(e) => setTargetPlaylist(e.target.value)}
+              className="rounded-lg border border-surface-variant bg-surface-container-high px-3 py-2 text-body-sm text-on-surface focus:border-primary focus:outline-none"
+            >
+              <option value="">All Songs (Default)</option>
+              {userPlaylists.map((pl) => (
+                <option key={pl.id} value={pl.id}>
+                  {pl.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span className="text-body-sm text-on-surface-variant">
+              {selected.size} of {tracks.length} selected
+            </span>
+            <button
+              type="button"
+              onClick={() => onImport(tracks.filter((t) => selected.has(t.youtubeId)), targetPlaylist)}
+              disabled={importing || selected.size === 0}
+              className="flex items-center gap-2 rounded-lg bg-primary px-8 py-3 font-semibold text-on-primary shadow-[0_0_15px_rgba(255,89,89,0.25)] transition-all hover:brightness-110 disabled:opacity-50"
+            >
+              {importing ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-on-primary/30 border-t-on-primary" />
+                  Importing…
+                </>
+              ) : (
+                <>
+                  <Icon name="download" />
+                  Import Selected ({selected.size})
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -326,7 +394,7 @@ function ErrorBanner({ message, onRetry }) {
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
-export default function PasteLinkPage() {
+export default function PasteLinkPage({ onPlay }) {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
@@ -334,10 +402,18 @@ export default function PasteLinkPage() {
   const [inputUrl, setInputUrl] = useState(initialUrl)
   const [status, setStatus] = useState('idle') // idle | loading | resolved | error
   const [result, setResult] = useState(null)   // { type, data }
+  const [userPlaylists, setUserPlaylists] = useState([])
   const [resolveError, setResolveError] = useState('')
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState('')
   const hasAutoResolved = useRef(false)
+
+  // Load playlists for selector
+  useEffect(() => {
+    api.getPlaylists()
+      .then((pls) => { if (Array.isArray(pls)) setUserPlaylists(pls) })
+      .catch(() => {})
+  }, [])
 
   const resolve = useCallback(async (url) => {
     if (!url.trim()) return
@@ -370,25 +446,25 @@ export default function PasteLinkPage() {
     }
   }, [initialUrl, resolve])
 
-  async function handleVideoImport() {
+  async function handleVideoImport(targetPlaylistId) {
     if (result?.type !== 'video') return
     setImporting(true)
     setImportError('')
     try {
-      await api.batchImportSongs([result.data])
-      navigate('/')
+      await api.batchImportSongs([result.data], targetPlaylistId)
+      navigate(targetPlaylistId ? `/playlists/${targetPlaylistId}` : '/')
     } catch (err) {
       setImportError(err.message)
       setImporting(false)
     }
   }
 
-  async function handlePlaylistImport(selectedTracks) {
+  async function handlePlaylistImport(selectedTracks, targetPlaylistId) {
     setImporting(true)
     setImportError('')
     try {
-      await api.batchImportSongs(selectedTracks)
-      navigate('/')
+      await api.batchImportSongs(selectedTracks, targetPlaylistId)
+      navigate(targetPlaylistId ? `/playlists/${targetPlaylistId}` : '/')
     } catch (err) {
       setImportError(err.message)
       setImporting(false)
@@ -445,7 +521,9 @@ export default function PasteLinkPage() {
       {status === 'resolved' && result?.type === 'video' && (
         <VideoPreview
           track={result.data}
+          userPlaylists={userPlaylists}
           onImport={handleVideoImport}
+          onPlay={onPlay}
           importing={importing}
           importError={importError}
         />
@@ -454,7 +532,9 @@ export default function PasteLinkPage() {
       {status === 'resolved' && result?.type === 'playlist' && (
         <PlaylistPreview
           data={result.data}
+          userPlaylists={userPlaylists}
           onImport={handlePlaylistImport}
+          onPlay={onPlay}
           importing={importing}
           importError={importError}
         />
