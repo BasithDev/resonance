@@ -29,17 +29,17 @@ function MiniPlayer({
   const [volume, setVolume] = useState(0.8)
   const [isMuted, setIsMuted] = useState(false)
   const [isSeeking, setIsSeeking] = useState(false)
-  const [localPct, setLocalPct] = useState(() => Math.round(progress * 100))
+  const [localPct, setLocalPct] = useState(() => (progress || 0) * 100)
 
   useEffect(() => {
     if (!isSeeking) {
-      setLocalPct(Math.round(progress * 100))
+      setLocalPct((progress || 0) * 100)
     }
   }, [progress, isSeeking])
 
   if (!track) return null
 
-  const bufferedPct = `${Math.round(bufferedProgress * 100)}%`
+  const bufferedPct = `${Math.min(100, (bufferedProgress || 0) * 100)}%`
   const artist = track.channel || track.artist || ''
 
   function toggleMute() {
@@ -65,15 +65,15 @@ function MiniPlayer({
         className="group relative h-2 w-full cursor-pointer bg-surface-variant"
         onClick={e => e.stopPropagation()}
       >
-        {/* Pre-buffered rail (light shaded) */}
+        {/* Pre-buffered rail (vivid pre-buffered bar) */}
         <div
-          className="pointer-events-none absolute left-0 top-0 h-full bg-white/30 transition-[width] duration-300"
+          className="pointer-events-none absolute left-0 top-0 h-full bg-white/40 shadow-[0_0_8px_rgba(255,255,255,0.4)] transition-[width] duration-200"
           style={{ width: bufferedPct }}
         />
-        {/* Active playback progress rail with smooth transition */}
+        {/* Active playback progress rail */}
         <div
-          className="pointer-events-none absolute left-0 top-0 h-full bg-primary-container shadow-[0_0_10px_rgba(255,89,89,0.8)] transition-[width] duration-150 ease-linear"
-          style={{ width: `${localPct}%` }}
+          className="pointer-events-none absolute left-0 top-0 h-full bg-primary-container shadow-[0_0_10px_rgba(255,89,89,0.8)]"
+          style={{ width: `${Math.min(100, Math.max(0, localPct))}%` }}
         />
         {/* Range input for smooth click & drag seeking */}
         <input

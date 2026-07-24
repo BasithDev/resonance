@@ -105,13 +105,7 @@ export default function PlaylistDetailPage({
   function handleShufflePlay() {
     const trackList = playlist?.songs || []
     if (trackList.length > 0) {
-      if (!shuffleOn) onToggleShuffle?.()
-      const shuffled = [...trackList]
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-      }
-      onPlay?.(shuffled[0], shuffled)
+      onPlay?.(trackList[0], trackList, { shuffle: true })
     }
   }
 

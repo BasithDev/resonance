@@ -79,12 +79,12 @@ export default function FullPlayer({
 }) {
   const [faved, setFaved]           = useState(false)
   const [isSeeking, setIsSeeking]   = useState(false)
-  const [localPct, setLocalPct]     = useState(() => Math.round((progress || 0) * 100))
+  const [localPct, setLocalPct]     = useState(() => (progress || 0) * 100)
 
   // Sync localPct with parent progress unless user is actively dragging/seeking
   useEffect(() => {
     if (!isSeeking) {
-      setLocalPct(Math.round((progress || 0) * 100))
+      setLocalPct((progress || 0) * 100)
     }
   }, [progress, isSeeking])
 
@@ -215,15 +215,15 @@ export default function FullPlayer({
                   <div className="relative" style={{ height: '20px' }}>
                     {/* Visual track */}
                     <div className="pointer-events-none absolute inset-x-0 top-[8px] h-[4px] overflow-hidden rounded-full bg-surface-variant">
-                      {/* Pre-buffered rail (light shaded) */}
+                      {/* Pre-buffered rail (vivid pre-buffered bar) */}
                       <div
-                        className="h-full bg-white/25 transition-[width] duration-300"
-                        style={{ width: `${Math.round(bufferedProgress * 100)}%` }}
+                        className="h-full bg-white/40 shadow-[0_0_8px_rgba(255,255,255,0.4)] transition-[width] duration-200"
+                        style={{ width: `${Math.min(100, (bufferedProgress || 0) * 100)}%` }}
                       />
-                      {/* Active playback progress rail with smooth transition */}
+                      {/* Active playback progress rail */}
                       <div
-                        className="absolute left-0 top-0 h-full rounded-full bg-primary shadow-[0_0_6px_rgba(255,89,89,0.7)] transition-[width] duration-150 ease-linear"
-                        style={{ width: `${localPct}%` }}
+                        className="absolute left-0 top-0 h-full rounded-full bg-primary shadow-[0_0_6px_rgba(255,89,89,0.7)]"
+                        style={{ width: `${Math.min(100, Math.max(0, localPct))}%` }}
                       />
                     </div>
                     {/* Invisible range for interaction */}

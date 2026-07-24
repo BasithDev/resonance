@@ -151,12 +151,7 @@ export default function LibraryPage({ onPlay, currentTrackId, isPlaying, isAudio
   function handleShufflePlayPlaylist(playlist) {
     const trackList = playlist.id === 'all-songs' ? songs : (playlist.songs || [])
     if (trackList.length > 0) {
-      const shuffled = [...trackList]
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-      }
-      onPlay?.(shuffled[0], shuffled)
+      onPlay?.(trackList[0], trackList, { shuffle: true })
     }
   }
 

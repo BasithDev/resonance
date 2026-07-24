@@ -73,6 +73,7 @@ function App() {
   const [repeatMode,       setRepeatMode]       = useState('off') // 'off' | 'all' | 'one'
   const [shuffleOn,        setShuffleOn]        = useState(false)
   const [queue,            setQueue]            = useState([])
+  const [originalQueue,    setOriginalQueue]    = useState([])
   const [queueIndex,       setQueueIndex]       = useState(0)
 
   const audioRef = useRef(null)
@@ -80,22 +81,98 @@ function App() {
     audioRef.current = new Audio()
   }
 
+  function shuffleArray(arr) {
+    const res = [...arr]
+    for (let i = res.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [res[i], res[j]] = [res[j], res[i]]
+    }
+    return res
+  }
+
   function cycleRepeatMode() {
     setRepeatMode((m) => (m === 'off' ? 'all' : m === 'all' ? 'one' : 'off'))
   }
 
   function toggleShuffle() {
-    setShuffleOn((s) => !s)
+    setShuffleOn((prevShuffle) => {
+      const nextShuffle = !prevShuffle
+      const baseQueue = originalQueue.length > 0 ? originalQueue : queue
+      if (nextShuffle) {
+        if (baseQueue.length > 0) {
+          const currentTrackId = playerTrack ? (playerTrack.id || playerTrack.youtubeId) : null
+          const otherTracks = baseQueue.filter(t => (t.id || t.youtubeId) !== currentTrackId)
+          const shuffledOthers = shuffleArray(otherTracks)
+          const newShuffledQueue = playerTrack ? [playerTrack, ...shuffledOthers] : shuffledOthers
+          setQueue(newShuffledQueue)
+          setQueueIndex(0)
+        }
+      } else {
+        if (baseQueue.length > 0) {
+          setQueue(baseQueue)
+          const currentTrackId = playerTrack ? (playerTrack.id || playerTrack.youtubeId) : null
+          const idx = baseQueue.findIndex(t => (t.id || t.youtubeId) === currentTrackId)
+          setQueueIndex(Math.max(0, idx))
+        }
+      }
+      return nextShuffle
+    })
   }
 
-  function getRandomQueueIndex(currentIdx, queueLen) {
-    if (queueLen <= 1) return 0
-    let rand = Math.floor(Math.random() * queueLen)
-    if (rand === currentIdx) {
-      rand = (rand + 1) % queueLen
+  // 60FPS continuous sub-millisecond animation loop for smooth progress bar movement & buffer tracking
+  useEffect(() => {
+    let animFrameId
+    function tick() {
+      const audio = audioRef.current
+      if (audio) {
+        const realCurrentTime = audio.currentTime || 0
+        const totalDur = playerTrack?.durationSec || audio.duration || 0
+
+        if (isPlaying) {
+          setCurrentTime(realCurrentTime)
+          if (totalDur > 0) {
+            setProgress(Math.min(1.0, realCurrentTime / totalDur))
+          }
+        }
+
+        if (audio.buffered && audio.buffered.length > 0) {
+          let maxBufferedEnd = 0
+          for (let i = 0; i < audio.buffered.length; i++) {
+            if (audio.currentTime >= audio.buffered.start(i) - 2) {
+              maxBufferedEnd = Math.max(maxBufferedEnd, audio.buffered.end(i))
+            }
+          }
+          if (maxBufferedEnd === 0) {
+            maxBufferedEnd = audio.buffered.end(audio.buffered.length - 1)
+          }
+          if (totalDur > 0) {
+            setBufferedProgress(Math.min(1.0, maxBufferedEnd / totalDur))
+          }
+        }
+
+        if (audio.currentTime > 0.1) {
+          setIsAudioLoading(false)
+        }
+      }
+      animFrameId = requestAnimationFrame(tick)
     }
-    return rand
-  }
+
+    animFrameId = requestAnimationFrame(tick)
+    return () => {
+      if (animFrameId) cancelAnimationFrame(animFrameId)
+    }
+  }, [isPlaying, playerTrack])
+
+  // Automatically pre-fetch next track in queue for instant playback
+  useEffect(() => {
+    if (queue.length > 0 && queueIndex < queue.length - 1) {
+      const nextTrack = queue[queueIndex + 1]
+      if (nextTrack) {
+        const nextId = nextTrack.id || nextTrack.youtubeId
+        fetch(`/api/prefetch/${nextId}`).catch(() => {})
+      }
+    }
+  }, [queueIndex, queue])
 
   // Handle track change & stream loading
   useEffect(() => {
@@ -118,7 +195,7 @@ function App() {
     }
   }, [playerTrack])
 
-  // Attach audio event listeners (timeupdate, ended, waiting, playing, progress)
+  // Attach audio event listeners
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -135,25 +212,6 @@ function App() {
       }
     }
 
-    function onTimeUpdate() {
-      const match = audio.src.match(/\?start=(\d+)/)
-      const offset = match ? Number(match[1]) : 0
-      const realCurrentTime = audio.currentTime + offset
-      const totalDur = playerTrack?.durationSec || audio.duration
-
-      setCurrentTime(realCurrentTime)
-
-      if (totalDur && totalDur > 0) {
-        setProgress(Math.min(1.0, realCurrentTime / totalDur))
-      }
-
-      updateBuffered()
-
-      if (audio.currentTime > 0.1) {
-        setIsAudioLoading(false)
-      }
-    }
-
     function onWaiting() {
       setIsAudioLoading(true)
     }
@@ -166,7 +224,6 @@ function App() {
       setIsAudioLoading(false)
 
       if (repeatMode === 'one') {
-        // Reset stream URL so looping plays cleanly from 0:00
         if (playerTrack) {
           const songId = playerTrack.id || playerTrack.youtubeId
           audio.src = `/api/stream/${songId}`
@@ -177,18 +234,11 @@ function App() {
           setBufferedProgress(0)
           setCurrentTime(0)
         }
-      } else if (shuffleOn) {
-        // Shuffle mode: pick random track from queue
-        const nextIdx = getRandomQueueIndex(queueIndex, queue.length)
-        setQueueIndex(nextIdx)
-        if (queue[nextIdx]) setPlayerTrack(queue[nextIdx])
       } else if (repeatMode === 'all') {
-        // Loop whole queue
         const nextIdx = (queueIndex + 1) % (queue.length || 1)
         setQueueIndex(nextIdx)
         if (queue[nextIdx]) setPlayerTrack(queue[nextIdx])
       } else {
-        // Repeat off
         if (queueIndex < queue.length - 1) {
           const nextIdx = queueIndex + 1
           setQueueIndex(nextIdx)
@@ -201,29 +251,40 @@ function App() {
       }
     }
 
-    audio.addEventListener('timeupdate', onTimeUpdate)
     audio.addEventListener('progress', updateBuffered)
     audio.addEventListener('waiting', onWaiting)
     audio.addEventListener('playing', onPlaying)
     audio.addEventListener('ended', onEnded)
 
     return () => {
-      audio.removeEventListener('timeupdate', onTimeUpdate)
       audio.removeEventListener('progress', updateBuffered)
       audio.removeEventListener('waiting', onWaiting)
       audio.removeEventListener('playing', onPlaying)
       audio.removeEventListener('ended', onEnded)
     }
-  }, [queueIndex, queue, playerTrack, repeatMode, shuffleOn])
+  }, [queueIndex, queue, playerTrack, repeatMode])
 
   /** Start playing a track. Optionally pass the full queue it belongs to. */
-  function playTrack(track, trackQueue) {
+  function playTrack(track, trackQueue, opts = {}) {
     if (!track) return
-    const q   = trackQueue ?? [track]
-    const idx = q.findIndex(t => (t.id || t.youtubeId) === (track.id || track.youtubeId))
+    const baseQueue = trackQueue ?? [track]
+    setOriginalQueue(baseQueue)
+
+    const shouldShuffle = opts.shuffle ?? shuffleOn
+    let finalQueue = baseQueue
+    let finalIdx = baseQueue.findIndex(t => (t.id || t.youtubeId) === (track.id || track.youtubeId))
+
+    if (shouldShuffle && baseQueue.length > 1) {
+      const trackId = track.id || track.youtubeId
+      const others = baseQueue.filter(t => (t.id || t.youtubeId) !== trackId)
+      finalQueue = [track, ...shuffleArray(others)]
+      finalIdx = 0
+      setShuffleOn(true)
+    }
+
     setPlayerTrack(track)
-    setQueue(q)
-    setQueueIndex(Math.max(0, idx))
+    setQueue(finalQueue)
+    setQueueIndex(Math.max(0, finalIdx))
     setIsPlaying(true)
     setIsAudioLoading(true)
     setProgress(0)
@@ -259,38 +320,14 @@ function App() {
     const totalDur = playerTrack.durationSec || audio.duration || 0
     const targetSec = Math.floor(pct * totalDur)
 
-    const match = audio.src.match(/\?start=(\d+)/)
-    const streamOffset = match ? Number(match[1]) : 0
-    const localTarget = targetSec - streamOffset
-
-    // 1. Instant Seek: If target time is already pre-buffered in RAM, seek immediately with 0ms delay!
-    let isBuffered = false
-    if (audio.buffered && localTarget >= 0) {
-      for (let i = 0; i < audio.buffered.length; i++) {
-        if (localTarget >= audio.buffered.start(i) && localTarget <= audio.buffered.end(i)) {
-          isBuffered = true
-          break
-        }
-      }
-    }
-
-    if (isBuffered) {
-      audio.currentTime = localTarget
+    // Direct native browser seek via HTTP Byte-Ranges (always 100% in sync with audio)
+    try {
+      audio.currentTime = targetSec
       setCurrentTime(targetSec)
       setProgress(pct)
-      return
+    } catch (err) {
+      console.warn('Native seek error:', err)
     }
-
-    // 2. Fetch new stream section starting at targetSec if not in RAM buffer
-    setProgress(pct)
-    setCurrentTime(targetSec)
-    setIsAudioLoading(true)
-
-    const songId = playerTrack.id || playerTrack.youtubeId
-    const streamUrl = `/api/stream/${songId}?start=${targetSec}`
-
-    audio.src = streamUrl
-    audio.play().catch((err) => console.warn('Audio seek error:', err))
   }
 
   function handleSeekBy(seconds) {
@@ -298,18 +335,15 @@ function App() {
     if (!audio || !playerTrack) return
 
     const totalDur = playerTrack.durationSec || audio.duration || 0
-    const match = audio.src.match(/\?start=(\d+)/)
-    const streamOffset = match ? Number(match[1]) : 0
-    const currentRealTime = audio.currentTime + streamOffset
-    const newTime = Math.max(0, Math.min(totalDur, currentRealTime + seconds))
+    const newTime = Math.max(0, Math.min(totalDur, audio.currentTime + seconds))
     const newPct = totalDur > 0 ? newTime / totalDur : 0
     handleSeek(newPct)
   }
 
   function handleNext() {
     if (queue.length === 0) return
-    if (shuffleOn) {
-      const nextIdx = getRandomQueueIndex(queueIndex, queue.length)
+    if (repeatMode === 'all') {
+      const nextIdx = (queueIndex + 1) % queue.length
       setQueueIndex(nextIdx)
       setPlayerTrack(queue[nextIdx])
       setIsPlaying(true)
@@ -323,15 +357,15 @@ function App() {
 
   function handlePrev() {
     if (queue.length === 0) return
-    if (shuffleOn) {
-      const prevIdx = getRandomQueueIndex(queueIndex, queue.length)
-      setQueueIndex(prevIdx)
-      setPlayerTrack(queue[prevIdx])
-      setIsPlaying(true)
-    } else if (queueIndex > 0) {
+    if (queueIndex > 0) {
       const i = queueIndex - 1
       setQueueIndex(i)
       setPlayerTrack(queue[i])
+      setIsPlaying(true)
+    } else if (repeatMode === 'all') {
+      const prevIdx = queue.length - 1
+      setQueueIndex(prevIdx)
+      setPlayerTrack(queue[prevIdx])
       setIsPlaying(true)
     }
   }
